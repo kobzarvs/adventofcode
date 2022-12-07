@@ -14,7 +14,7 @@ interface Node {
 class File implements Node {
     type = NodeType.File;
     name: string;
-    parent: Node | null;
+    parent: Dir | null;
     #size = 0;
 
     constructor(name: string, parent: Dir, size: number) {
@@ -148,6 +148,6 @@ try {
     console.log('Part II:', bestCandidates[0]);
 
 } catch (e) {
-    // console.error('Input file not found');
+    console.error('Input file not found');
     Deno.exit(1);
 }
