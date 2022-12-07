@@ -2,10 +2,9 @@ import { loadInput } from "../../utils/load-input.ts";
 
 
 /**
- * It takes a string and a number, and returns the index of the first character in the string that is
- * part of a sequence of the given size that contains no repeated characters
- * @param {string} input - string - the string to search
- * @param {number} size - the size of the unique sequence
+ * Find the first unique sequence of size n in a string.
+ * @param {string} input - string - the string to search for the first unique sequence
+ * @param {number} size - the size of the sequence we're looking for
  * @returns the index following of the first unique sequence of given size.
  */
 function findFirstUniqSeq(input: string, size: number): number | undefined {
@@ -22,7 +21,7 @@ function findFirstUniqSeq(input: string, size: number): number | undefined {
             }
         }
         if (uniqSeq.length === size) {
-            return i + 1; // uniq full set! return next index
+            return i + 1; // found uniq sequence and return next index
         }
     }
 }
