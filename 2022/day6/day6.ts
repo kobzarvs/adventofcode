@@ -1,12 +1,12 @@
 import { loadInput } from "../../utils/load-input.ts";
 
+
 /**
- * For each value in the input, add it to the uniqSeq array,
- * and if it's already in the array, remove all values before it.
- *
- * @param input - text string
- * @param size - the size of the sequence we're looking for
- * @returns The index of the first unique sequence of size n.
+ * It takes a string and a number, and returns the index of the first character in the string that is
+ * part of a sequence of the given size that contains no repeated characters
+ * @param {string} input - string - the string to search
+ * @param {number} size - the size of the unique sequence
+ * @returns the index following of the first unique sequence of given size.
  */
 function findFirstUniqSeq(input: string, size: number): number | undefined {
     const uniqSeq: string[] = [];
