@@ -1,0 +1,9 @@
+{
+  "imports": {
+    "/": "./",
+    "./": "./",
+    "lodash": "https://cdn.skypack.dev/lodash",
+    "compose": "https://deno.land/x/compose@1.0.0/index.js",
+    "asserts": "https://deno.land/std@0.167.0/testing/asserts.ts"
+  }
+}
