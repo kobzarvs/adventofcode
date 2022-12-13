@@ -1,20 +1,9 @@
-import sys
 import tokenize as tk
 import math
 import itertools as it
 
-from interactive import interactive
-
 
 class Monkey:
-    id: int
-    items: list
-    vars: list
-    op: str
-    div_by: int
-    throw: list
-    inspections: int
-
     def __init__(self, id):
         self.id = id
         self.items = list()
@@ -23,7 +12,10 @@ class Monkey:
         self.throw = list()
         self.div_by = None
         self.inspections = 0
-    
+        self.relations_1 = []
+        self.relations_2 = []
+        self.relations_count = {}
+
     def __repr__(self):
         return f'Monkey #{self.id} inspections: {self.inspections} {self.items}'
 
@@ -33,20 +25,10 @@ class Monkey:
 
     def add_item(self, item):
         self.items.append(item)
-    
+
 
 def enum(**enums):
     return type('Enum', (), enums)
-
-
-def render(screen, font, clock, event, ctx={ 'monkeys': {}, 'round': 0 }):
-    round = ctx['round'] + 1
-    text = font.render(f'Round: {round}', False, (255, 255, 255))
-    screen.blit(text, (10, 5))
-
-    for i, monkey in enumerate(ctx['monkeys'].values()):
-        text = font.render(f'{monkey}', False, (255, 255, 255))
-        screen.blit(text, (10, i * 32 + 50))
 
 
 class Game:
@@ -67,7 +49,7 @@ class Game:
             self.filename = 'src/2022/day11/short.txt'
         else:
             self.filename = 'src/2022/day11/input.txt'
-        
+
         self.lines = []
         with open(self.filename, 'r') as f:
             for line in f:
@@ -77,10 +59,10 @@ class Game:
         self.lines.append(b'')
         return self.lines
 
-
     def parse(self, lines=None):
         i = 0
         lines = lines or self.lines
+
         def readline():
             nonlocal i
             line = lines[i]
@@ -135,20 +117,20 @@ class Game:
                         if len(monkey.throw) == 2:
                             state = None
         if self.with_lcm:
-            self.lcm = math.lcm(*[monkey.div_by for monkey in monkeys.values()])
+            self.lcm = math.lcm(
+                *[monkey.div_by for monkey in monkeys.values()])
 
         return monkeys
 
-    def perform(self, monkeys=None, render=None):
+    def perform(self, monkeys=None):
         monkeys = self.monkeys
 
         for round in range(self.max_round):
             self.round = round
             self.perform_round()
-            if render:
-                interactive(render=render, ctx={ 'monkeys': monkeys, 'round': round })
-        
-        inspections = sorted([m.inspections for m in monkeys.values()], reverse=True)
+
+        inspections = sorted(
+            [m.inspections for m in monkeys.values()], reverse=True)
         result = inspections[0] * inspections[1]
 
         if self.debug:
@@ -164,9 +146,12 @@ class Game:
         lcm = self.lcm
 
         for monkey in monkeys.values():
+            monkey.relations_1 = []
+            monkey.relations_2 = []
             while monkey.items:
                 item = monkey.get_item()
-                item2 = item if monkey.vars[2] == 'old' else int(monkey.vars[2])
+                item2 = item if monkey.vars[2] == 'old' else int(
+                    monkey.vars[2])
 
                 if monkey.op == '*':
                     item *= item2
@@ -180,8 +165,10 @@ class Game:
 
                 if item % monkey.div_by == 0:
                     monkeys[monkey.throw[0]].add_item(item)
+                    monkey.relations_1.append((monkey.throw[0], item))
                 else:
                     monkeys[monkey.throw[1]].add_item(item)
+                    monkey.relations_2.append((monkey.throw[1], item))
 
 
 # Part I
