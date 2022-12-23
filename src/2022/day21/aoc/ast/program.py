@@ -1,6 +1,6 @@
-from aoc.ast.BinOp import BinOp
-from aoc.ast.Identifier import Identifier
-from aoc.ast.Visitor import Visitor
+from aoc.ast.binop import BinOp
+from aoc.ast.identifier import Identifier
+from aoc.ast.visitor import Visitor
 
 
 class Program:

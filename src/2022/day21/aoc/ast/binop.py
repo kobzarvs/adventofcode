@@ -1,4 +1,4 @@
-from aoc.ast.Number import Number
+from aoc.ast.number import Number
 
 
 class BinOp:

@@ -1,7 +1,7 @@
 from typing import List
 
-from aoc.ast.BinOp import BinOp
-from aoc.ast.Identifier import Identifier
+from aoc.ast.binop import BinOp
+from aoc.ast.identifier import Identifier
 
 
 class Visitor:

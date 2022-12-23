@@ -1,4 +1,4 @@
-from .AstGenerator import AstGenerator
-from .CodeGenerator import CodeGenerator
+from .astgen import AstGenerator
+from .codegen import CodeGenerator
 
 __all__ = ['AstGenerator', 'CodeGenerator']

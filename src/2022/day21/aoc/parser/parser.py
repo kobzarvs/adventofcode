@@ -1,7 +1,7 @@
 from sly import Parser
 
 from aoc.ast import Program, BinOp, Number
-from aoc.parser.AocLexer import AocLexer
+from aoc.parser.lexer import AocLexer
 
 
 class AocParser(Parser):

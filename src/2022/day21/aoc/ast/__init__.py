@@ -1,7 +1,7 @@
-from .Visitor import Visitor
-from .Program import Program
-from .Identifier import Identifier
-from .BinOp import BinOp
-from .Number import Number
+from .visitor import Visitor
+from .program import Program
+from .identifier import Identifier
+from .binop import BinOp
+from .number import Number
 
 __all__ = [Visitor, Program, Identifier, BinOp, Number]

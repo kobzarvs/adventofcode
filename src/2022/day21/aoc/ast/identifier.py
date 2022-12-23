@@ -1,5 +1,5 @@
-from aoc.ast.BinOp import BinOp
-from aoc.ast.Number import Number
+from aoc.ast.binop import BinOp
+from aoc.ast.number import Number
 
 
 class Identifier:

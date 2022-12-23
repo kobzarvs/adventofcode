@@ -1,4 +1,4 @@
-from .AocLexer import AocLexer
-from .AocParser import AocParser
+from .lexer import AocLexer
+from .parser import AocParser
 
 __all__ = ['AocLexer', 'AocParser']
