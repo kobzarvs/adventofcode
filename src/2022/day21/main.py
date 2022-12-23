@@ -1,6 +1,6 @@
-from aoc_ast import *
-from aoc_lexer import AocLexer
-from aoc_parser import AocParser
+from aoc.ast import Identifier
+from aoc.gen import AstGenerator, CodeGenerator
+from aoc.parser import AocLexer, AocParser
 
 if __name__ == '__main__':
     short = False
@@ -40,7 +40,7 @@ if __name__ == '__main__':
     # генерация AST для обратных выражений
     ast_visitor = AstGenerator(ROOT_NODE, TARGET_NODE)
     ast = ast_visitor.prog
-    traverse(root, ast_visitor)
+    ast.traverse(root, ast_visitor)
 
     # Вычисление ветки, в которой находится TARGET_NODE='humn'
     top_node = ast_visitor.path[0]
@@ -64,7 +64,7 @@ if __name__ == '__main__':
     # Поиск пути от root до humn
     # генерация кода для обратных выражений
     code_visitor = CodeGenerator(ROOT_NODE, TARGET_NODE)
-    traverse(root, code_visitor)
+    ast.traverse(root, code_visitor)
 
     # Вычисление ветки, в которой находится TARGET_NODE='humn'
     top_node = code_visitor.path[0]
