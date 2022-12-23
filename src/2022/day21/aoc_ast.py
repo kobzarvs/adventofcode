@@ -111,16 +111,29 @@ class Visitor:
         self.start = start
         self.end = end
         self.path = []
+        self.code = []
+
+    def generate_reverse_expr(self, node):
+        if type(node.expr) == BinOp:
+            if node.expr.left in self.path:
+                self.code.append(f'{node.expr.right.name}: {node.expr.right.eval()}')
+                self.code.append(f'{node.what_is(node.expr.left.name)}')
+            if node.expr.right in self.path:
+                self.code.append(f'{node.expr.left.name}: {node.expr.left.eval()}')
+                self.code.append(f'{node.what_is(node.expr.right.name)}')
+        return self.code
 
     def enter_node(self, node, level):
         if node.name == self.end:
             self.path.append(node)
+            self.generate_reverse_expr(node)
             self.done = True
         return self.done
 
     def exit_node(self, node, level):
         if self.done and node.name != self.start and type(node.expr) == BinOp:
             self.path.insert(0, node)
+            self.generate_reverse_expr(node)
         return self.done
 
 
