@@ -7,7 +7,6 @@ class AocLexer(Lexer):
 
     # String containing ignored characters between tokens
     ignore = ' \t\n'
-    ignore_newline = r'\n+'
     ignore_comment_line = r'\#.*|\/\/.*'
 
     # Regular expression rules for tokens
