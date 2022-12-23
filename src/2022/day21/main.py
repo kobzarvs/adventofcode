@@ -78,8 +78,7 @@ if __name__ == '__main__':
     print(code)
 
     # Парсинг и вычисление сгенерированных обратных выражений
-    lexer = AocLexer()
-    pars = AocParser()
-    result = pars.parse(lexer.tokenize(code))
+    parser = AocParser()
+    result = parser.parse(lexer.tokenize(code))
 
     print('\nPart II (via parse code):', result.vars[TARGET_NODE].eval())
