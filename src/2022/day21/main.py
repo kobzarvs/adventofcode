@@ -39,6 +39,7 @@ if __name__ == '__main__':
     # Поиск пути от root до humn
     # генерация AST для обратных выражений
     ast_visitor = AstGenerator(ROOT_NODE, TARGET_NODE)
+    ast = ast_visitor.prog
     traverse(root, ast_visitor)
 
     # Вычисление ветки, в которой находится TARGET_NODE='humn'
@@ -49,11 +50,11 @@ if __name__ == '__main__':
         initial = left
 
     # Инициализация переменной-ветки, в которой находится humn
-    ast_visitor.prog.insert(Identifier(top_node.name, Number(initial.eval())))
-    for s in ast_visitor.prog.statements:
+    ast.insert(Identifier(top_node.name, initial.eval()))
+    for s in ast.statements:
         print(f'{s} => {s.eval()}')
 
-    print('\nPart II (via AST builder):',ast_visitor.prog.vars[TARGET_NODE], ast_visitor.prog.vars[TARGET_NODE].eval())
+    print('\nPart II (via AST builder):', ast.vars[TARGET_NODE], ast.vars[TARGET_NODE].eval())
 
     #
     # Part II via text code generation

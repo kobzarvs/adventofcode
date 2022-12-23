@@ -68,7 +68,7 @@ class BinOp:
 class Identifier:
     def __init__(self, name, expr):
         self.name = name
-        self.expr = expr
+        self.expr = Number(expr) if type(expr) in [int, float] else expr
         self.module = None
 
     def eval(self, module=None):
@@ -148,11 +148,11 @@ class AstGenerator(Visitor):
             if node.expr.left in self.path:
                 expr = node.what_is(node.expr.left.name)
                 self.prog.insert(expr)
-                self.prog.insert(Identifier(node.expr.right.name, Number(node.expr.right.eval())))
+                self.prog.insert(Identifier(node.expr.right.name, node.expr.right.eval()))
             if node.expr.right in self.path:
                 expr = node.what_is(node.expr.right.name)
                 self.prog.insert(expr)
-                self.prog.insert(Identifier(node.expr.left.name, Number(node.expr.left.eval())))
+                self.prog.insert(Identifier(node.expr.left.name, node.expr.left.eval()))
 
 
 class CodeGenerator(Visitor):
@@ -185,8 +185,8 @@ def traverse(node, visitor: Visitor, level=0):
 
 
 if __name__ == '__main__':
-    x = Identifier('x', Number(4))
-    y = Identifier('y', Number(2))
+    x = Identifier('x', 4)
+    y = Identifier('y', 2)
     z1 = Identifier('z1', BinOp(x, '+', y))
     z2 = Identifier('z2', BinOp(x, '*', y))
     z3 = Identifier('z3', BinOp(x, '-', y))
