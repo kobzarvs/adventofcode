@@ -37,7 +37,7 @@ if __name__ == '__main__':
     print('\n--- Part II via AST ---')
 
     # Поиск пути от root до humn
-    # генерация кода для обратных выражений
+    # генерация AST для обратных выражений
     ast_visitor = AstGenerator(ROOT_NODE, TARGET_NODE)
     traverse(root, ast_visitor)
 
@@ -60,6 +60,8 @@ if __name__ == '__main__':
     #
     print('\n--- Part II via text code generation ---')
 
+    # Поиск пути от root до humn
+    # генерация кода для обратных выражений
     code_visitor = CodeGenerator(ROOT_NODE, TARGET_NODE)
     traverse(root, code_visitor)
 
