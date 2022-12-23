@@ -64,7 +64,7 @@ if __name__ == '__main__':
     print(z3.what_is('x'))
     print(z3.what_is('y'))
 
-    print('\n[*]')
+    print('\n[/]')
     print(z4.what_is('z4'))
     print(z4.what_is('x'))
     print(z4.what_is('y'))
