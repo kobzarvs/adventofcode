@@ -47,7 +47,7 @@ if __name__ == '__main__':
     else:
         initial = f'{top_node.name}: {left.eval()}'
 
-    # Инициализации для ветки, в которой находится humn
+    # Инициализация переменной-ветки, в которой находится humn
     visitor.code.insert(0, initial)
 
     # Склейка кода
