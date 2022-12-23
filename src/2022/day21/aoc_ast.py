@@ -72,9 +72,7 @@ class Identifier:
         self.module = None
 
     def eval(self, module=None):
-        if module:
-            return self.expr.eval(module)
-        return self.expr.eval(self.module)
+        return self.expr.eval(module or self.module)
 
     def what_is(self, name):
         names = [self.name, self.expr.left.name, self.expr.right.name]
