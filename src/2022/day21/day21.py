@@ -1,5 +1,5 @@
-from aoc_lexer import SlyLexer
-from aoc_parser import SlyParser
+from aoc_lexer import AocLexer
+from aoc_parser import AocParser
 from aoc_ast import *
 
 
@@ -39,8 +39,8 @@ if __name__ == '__main__':
     #
 
     # Парсинг и вычисление основного потока данных
-    lexer = SlyLexer()
-    parser = SlyParser()
+    lexer = AocLexer()
+    parser = AocParser()
     result = parser.parse(lexer.tokenize(data))
     result.eval()
     root = parser.vars[ROOT_NODE]
@@ -74,8 +74,8 @@ if __name__ == '__main__':
     code = generate_code(parser.vars, path, debug=False)
 
     # Парсинг и вычисление сгенерированных обратных выражений
-    lexer = SlyLexer()
-    pars = SlyParser()
+    lexer = AocLexer()
+    pars = AocParser()
     result = pars.parse(lexer.tokenize(code))
 
     print('\nPart II:', pars.vars[TARGET_NODE].eval())

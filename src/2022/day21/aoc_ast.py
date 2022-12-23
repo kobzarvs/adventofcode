@@ -126,8 +126,7 @@ class Visitor:
 
 def traverse(node, visitor: Visitor, level=0):
     if isinstance(node, Identifier):
-        done = visitor.enter_node(node, level + 1)
-        if not done:
+        if not visitor.enter_node(node, level + 1):
             traverse(node.expr, visitor, level + 1)
             if isinstance(node.expr, BinOp):
                 if not traverse(node.expr.left, visitor, level):
@@ -147,14 +146,14 @@ if __name__ == '__main__':
     print(e.what_is('x'))
     print(e.what_is('y'))
 
-    e = Identifier('z', BinOp(x, '-', y))
-    print('\n[-]')
+    e = Identifier('z', BinOp(x, '*', y))
+    print('\n[*]')
     print(e.what_is('z'))
     print(e.what_is('x'))
     print(e.what_is('y'))
 
-    e = Identifier('z', BinOp(x, '*', y))
-    print('\n[*]')
+    e = Identifier('z', BinOp(x, '-', y))
+    print('\n[-]')
     print(e.what_is('z'))
     print(e.what_is('x'))
     print(e.what_is('y'))

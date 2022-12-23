@@ -1,12 +1,12 @@
 from sly import Parser
 
-from aoc_lexer import SlyLexer
+from aoc_lexer import AocLexer
 from aoc_ast import *
 
 
-class SlyParser(Parser):
+class AocParser(Parser):
     debugfile = 'day21.out'
-    tokens = SlyLexer.tokens
+    tokens = AocLexer.tokens
 
     precedence = (
         ('left', PLUS, MINUS),

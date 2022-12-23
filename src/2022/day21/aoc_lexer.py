@@ -1,6 +1,7 @@
 from sly import Lexer
 
-class SlyLexer(Lexer):
+
+class AocLexer(Lexer):
     # Set of token names. This is always required
     tokens = {NAME, NUMBER, PLUS, MINUS, MUL, DIVIDE, ASSIGN}
 
@@ -10,11 +11,11 @@ class SlyLexer(Lexer):
     ignore_comment_line = r'\#.*|\/\/.*'
 
     # Regular expression rules for tokens
-    PLUS    = r'\+'
-    MINUS   = r'-'
-    MUL   = r'\*'
-    DIVIDE  = r'/'
-    ASSIGN  = r':'
+    PLUS = r'\+'
+    MINUS = r'-'
+    MUL = r'\*'
+    DIVIDE = r'/'
+    ASSIGN = r':'
 
     literals = {':', '+', '-', '*', '/'}
 

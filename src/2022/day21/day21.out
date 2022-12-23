@@ -1,0 +1,272 @@
+Grammar:
+
+Rule 0     S' -> program
+Rule 1     program -> _1_repeat
+Rule 2     _1_repeat -> _1_items
+Rule 3     _1_repeat -> <empty>
+Rule 4     _1_items -> _1_items _1_item
+Rule 5     _1_items -> _1_item
+Rule 6     _1_item -> assignment
+Rule 7     assignment -> NAME ASSIGN expr
+Rule 8     expr -> NUMBER
+Rule 9     expr -> NAME
+Rule 10    expr -> expr DIVIDE expr  [precedence=left, level=2]
+Rule 11    expr -> expr MUL expr  [precedence=left, level=2]
+Rule 12    expr -> expr MINUS expr  [precedence=left, level=1]
+Rule 13    expr -> expr PLUS expr  [precedence=left, level=1]
+
+Terminals, with rules where they appear:
+
+ASSIGN               : 7
+DIVIDE               : 10
+MINUS                : 12
+MUL                  : 11
+NAME                 : 7 9
+NUMBER               : 8
+PLUS                 : 13
+error                : 
+
+Nonterminals, with rules where they appear:
+
+_1_item              : 4 5
+_1_items             : 2 4
+_1_repeat            : 1
+assignment           : 6
+expr                 : 7 10 10 11 11 12 12 13 13
+program              : 0
+
+
+state 0
+
+    (0) S' -> . program
+    (1) program -> . _1_repeat
+    (2) _1_repeat -> . _1_items
+    (3) _1_repeat -> .
+    (4) _1_items -> . _1_items _1_item
+    (5) _1_items -> . _1_item
+    (6) _1_item -> . assignment
+    (7) assignment -> . NAME ASSIGN expr
+    $end            reduce using rule 3 (_1_repeat -> .)
+    NAME            shift and go to state 6
+
+    program                        shift and go to state 1
+    _1_repeat                      shift and go to state 2
+    _1_items                       shift and go to state 3
+    _1_item                        shift and go to state 4
+    assignment                     shift and go to state 5
+
+state 1
+
+    (0) S' -> program .
+
+
+state 2
+
+    (1) program -> _1_repeat .
+    $end            reduce using rule 1 (program -> _1_repeat .)
+
+
+state 3
+
+    (2) _1_repeat -> _1_items .
+    (4) _1_items -> _1_items . _1_item
+    (6) _1_item -> . assignment
+    (7) assignment -> . NAME ASSIGN expr
+    $end            reduce using rule 2 (_1_repeat -> _1_items .)
+    NAME            shift and go to state 6
+
+    _1_item                        shift and go to state 7
+    assignment                     shift and go to state 5
+
+state 4
+
+    (5) _1_items -> _1_item .
+    NAME            reduce using rule 5 (_1_items -> _1_item .)
+    $end            reduce using rule 5 (_1_items -> _1_item .)
+
+
+state 5
+
+    (6) _1_item -> assignment .
+    NAME            reduce using rule 6 (_1_item -> assignment .)
+    $end            reduce using rule 6 (_1_item -> assignment .)
+
+
+state 6
+
+    (7) assignment -> NAME . ASSIGN expr
+    ASSIGN          shift and go to state 8
+
+
+state 7
+
+    (4) _1_items -> _1_items _1_item .
+    NAME            reduce using rule 4 (_1_items -> _1_items _1_item .)
+    $end            reduce using rule 4 (_1_items -> _1_items _1_item .)
+
+
+state 8
+
+    (7) assignment -> NAME ASSIGN . expr
+    (8) expr -> . NUMBER
+    (9) expr -> . NAME
+    (10) expr -> . expr DIVIDE expr
+    (11) expr -> . expr MUL expr
+    (12) expr -> . expr MINUS expr
+    (13) expr -> . expr PLUS expr
+    NUMBER          shift and go to state 11
+    NAME            shift and go to state 9
+
+    expr                           shift and go to state 10
+
+state 9
+
+    (9) expr -> NAME .
+    DIVIDE          reduce using rule 9 (expr -> NAME .)
+    MUL             reduce using rule 9 (expr -> NAME .)
+    MINUS           reduce using rule 9 (expr -> NAME .)
+    PLUS            reduce using rule 9 (expr -> NAME .)
+    NAME            reduce using rule 9 (expr -> NAME .)
+    $end            reduce using rule 9 (expr -> NAME .)
+
+
+state 10
+
+    (7) assignment -> NAME ASSIGN expr .
+    (10) expr -> expr . DIVIDE expr
+    (11) expr -> expr . MUL expr
+    (12) expr -> expr . MINUS expr
+    (13) expr -> expr . PLUS expr
+    NAME            reduce using rule 7 (assignment -> NAME ASSIGN expr .)
+    $end            reduce using rule 7 (assignment -> NAME ASSIGN expr .)
+    DIVIDE          shift and go to state 12
+    MUL             shift and go to state 13
+    MINUS           shift and go to state 14
+    PLUS            shift and go to state 15
+
+
+state 11
+
+    (8) expr -> NUMBER .
+    DIVIDE          reduce using rule 8 (expr -> NUMBER .)
+    MUL             reduce using rule 8 (expr -> NUMBER .)
+    MINUS           reduce using rule 8 (expr -> NUMBER .)
+    PLUS            reduce using rule 8 (expr -> NUMBER .)
+    NAME            reduce using rule 8 (expr -> NUMBER .)
+    $end            reduce using rule 8 (expr -> NUMBER .)
+
+
+state 12
+
+    (10) expr -> expr DIVIDE . expr
+    (8) expr -> . NUMBER
+    (9) expr -> . NAME
+    (10) expr -> . expr DIVIDE expr
+    (11) expr -> . expr MUL expr
+    (12) expr -> . expr MINUS expr
+    (13) expr -> . expr PLUS expr
+    NUMBER          shift and go to state 11
+    NAME            shift and go to state 9
+
+    expr                           shift and go to state 16
+
+state 13
+
+    (11) expr -> expr MUL . expr
+    (8) expr -> . NUMBER
+    (9) expr -> . NAME
+    (10) expr -> . expr DIVIDE expr
+    (11) expr -> . expr MUL expr
+    (12) expr -> . expr MINUS expr
+    (13) expr -> . expr PLUS expr
+    NUMBER          shift and go to state 11
+    NAME            shift and go to state 9
+
+    expr                           shift and go to state 17
+
+state 14
+
+    (12) expr -> expr MINUS . expr
+    (8) expr -> . NUMBER
+    (9) expr -> . NAME
+    (10) expr -> . expr DIVIDE expr
+    (11) expr -> . expr MUL expr
+    (12) expr -> . expr MINUS expr
+    (13) expr -> . expr PLUS expr
+    NUMBER          shift and go to state 11
+    NAME            shift and go to state 9
+
+    expr                           shift and go to state 18
+
+state 15
+
+    (13) expr -> expr PLUS . expr
+    (8) expr -> . NUMBER
+    (9) expr -> . NAME
+    (10) expr -> . expr DIVIDE expr
+    (11) expr -> . expr MUL expr
+    (12) expr -> . expr MINUS expr
+    (13) expr -> . expr PLUS expr
+    NUMBER          shift and go to state 11
+    NAME            shift and go to state 9
+
+    expr                           shift and go to state 19
+
+state 16
+
+    (10) expr -> expr DIVIDE expr .
+    (10) expr -> expr . DIVIDE expr
+    (11) expr -> expr . MUL expr
+    (12) expr -> expr . MINUS expr
+    (13) expr -> expr . PLUS expr
+    DIVIDE          reduce using rule 10 (expr -> expr DIVIDE expr .)
+    MUL             reduce using rule 10 (expr -> expr DIVIDE expr .)
+    MINUS           reduce using rule 10 (expr -> expr DIVIDE expr .)
+    PLUS            reduce using rule 10 (expr -> expr DIVIDE expr .)
+    NAME            reduce using rule 10 (expr -> expr DIVIDE expr .)
+    $end            reduce using rule 10 (expr -> expr DIVIDE expr .)
+
+
+state 17
+
+    (11) expr -> expr MUL expr .
+    (10) expr -> expr . DIVIDE expr
+    (11) expr -> expr . MUL expr
+    (12) expr -> expr . MINUS expr
+    (13) expr -> expr . PLUS expr
+    DIVIDE          reduce using rule 11 (expr -> expr MUL expr .)
+    MUL             reduce using rule 11 (expr -> expr MUL expr .)
+    MINUS           reduce using rule 11 (expr -> expr MUL expr .)
+    PLUS            reduce using rule 11 (expr -> expr MUL expr .)
+    NAME            reduce using rule 11 (expr -> expr MUL expr .)
+    $end            reduce using rule 11 (expr -> expr MUL expr .)
+
+
+state 18
+
+    (12) expr -> expr MINUS expr .
+    (10) expr -> expr . DIVIDE expr
+    (11) expr -> expr . MUL expr
+    (12) expr -> expr . MINUS expr
+    (13) expr -> expr . PLUS expr
+    MINUS           reduce using rule 12 (expr -> expr MINUS expr .)
+    PLUS            reduce using rule 12 (expr -> expr MINUS expr .)
+    NAME            reduce using rule 12 (expr -> expr MINUS expr .)
+    $end            reduce using rule 12 (expr -> expr MINUS expr .)
+    DIVIDE          shift and go to state 12
+    MUL             shift and go to state 13
+
+
+state 19
+
+    (13) expr -> expr PLUS expr .
+    (10) expr -> expr . DIVIDE expr
+    (11) expr -> expr . MUL expr
+    (12) expr -> expr . MINUS expr
+    (13) expr -> expr . PLUS expr
+    MINUS           reduce using rule 13 (expr -> expr PLUS expr .)
+    PLUS            reduce using rule 13 (expr -> expr PLUS expr .)
+    NAME            reduce using rule 13 (expr -> expr PLUS expr .)
+    $end            reduce using rule 13 (expr -> expr PLUS expr .)
+    DIVIDE          shift and go to state 12
+    MUL             shift and go to state 13
