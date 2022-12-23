@@ -20,9 +20,6 @@ class AocLexer(Lexer):
 
     NAME = r'[a-zA-Z_][a-zA-Z0-9_]*'
 
-    def __init__(self):
-        self.nesting_level = 0
-
     @_(r'\d+(\.\d+)?')
     def NUMBER(self, t):
         t.value = float(t.value)
