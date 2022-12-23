@@ -15,24 +15,16 @@ class AocParser(Parser):
 
     def __init__(self):
         super().__init__()
-        self.vars = {}
-
-    def get_or_create_var(self, name, initial=None):
-        if name in self.vars:
-            if initial is not None:
-                self.vars[name].expr = initial
-            return self.vars[name]
-        else:
-            self.vars[name] = Identifier(name, initial)
-            return self.vars[name]
+        self.program = Program()
 
     @_('{ assignment }')
     def program(self, p):
-        return Program(p.assignment)
+        self.program.statements = p.assignment
+        return self.program
 
     @_('NAME ASSIGN expr')
     def assignment(self, p):
-        return self.get_or_create_var(p.NAME, p.expr)
+        return self.program.get_or_create_var(p.NAME, p.expr)
 
     @_('expr PLUS expr',
        'expr MINUS expr',
@@ -43,7 +35,7 @@ class AocParser(Parser):
 
     @_('NAME')
     def expr(self, p):
-        return self.get_or_create_var(p.NAME)
+        return self.program.get_or_create_var(p.NAME)
 
     @_('NUMBER')
     def expr(self, p):
