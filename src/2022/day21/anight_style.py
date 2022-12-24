@@ -5,16 +5,16 @@ from typing import Dict, Tuple, Callable
 
 Expr = Tuple[str, str, str]
 
-operators: Dict[str, Callable[[str, str], int]] = {"+": add, "-": sub, "*": mul, "/": floordiv}
-reversed_ops: Dict[str, str] = {'+': '-', '-': '+', '*': '/', '/': '*'}
-deps: Dict[str, str] = {}
+operators = {"+": add, "-": sub, "*": mul, "/": floordiv}
+reversed_ops = {'+': '-', '-': '+', '*': '/', '/': '*'}
+deps = {}
 
 
 def handle_expr(left: str, op: str, right: str) -> int:
     return operators[op](monkeys[left](), monkeys[right]())
 
 
-def load_data(filename) -> Dict[str, partial[[str, str, str], int]]:
+def load_data(filename):
     with open(filename, 'r') as f:
         for line in f:
             line = line.rstrip()
@@ -29,7 +29,7 @@ def load_data(filename) -> Dict[str, partial[[str, str, str], int]]:
 
 def swap_expr(name: str, via_value: str, expr: Expr) -> Expr:
     left, op, right = expr
-    new_expr: Expr = (via_value, reversed_ops[op], right)
+    new_expr = (via_value, reversed_ops[op], right)
     if right == name:
         if op in ['+', '*']:
             new_expr = (via_value, reversed_ops[op], left)
