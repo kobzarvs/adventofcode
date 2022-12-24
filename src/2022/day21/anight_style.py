@@ -1,5 +1,5 @@
+from collections import namedtuple
 from dataclasses import dataclass
-from functools import partial
 from operator import add, sub, mul, floordiv
 from typing import Tuple
 
@@ -9,22 +9,16 @@ operators = {"+": add, "-": sub, "*": mul, "/": floordiv}
 reversed_ops = {'+': '-', '-': '+', '*': '/', '/': '*'}
 deps = {}
 
-
-def handle_expr(left: str, op: str, right: str) -> int:
-    return operators[op](monkeys[left](), monkeys[right]())
+Mask = namedtuple('Mask', 'search replace', defaults=['', ''])
 
 
-def load_data(filename):
-    with open(filename, 'r') as f:
-        for line in f:
-            line = line.rstrip()
-            name, expr = line.split(': ')
-            if expr.isnumeric():
-                yield name, partial(lambda value: int(value), expr)
-            else:
-                left, op, right = expr.split()
-                deps[right] = deps[left] = name
-                yield name, partial(handle_expr, left, op, right)
+@dataclass
+class Number:
+    name: str
+    value: int
+
+    def eval(self):
+        return self.value
 
 
 @dataclass
@@ -34,18 +28,33 @@ class Expr:
     op: str
     right: str
 
+    def eval(self):
+        return operators[self.op](monkeys[self.left].eval(), monkeys[self.right].eval())
+
     def rop(self):
         return reversed_ops[self.op]
 
+    def swap(self, mask: Mask):
+        match self:
+            case Expr(name, mask.search, _, right):
+                return Expr(mask.search, name, self.rop(), right)
+            case Expr(name, left, '+' | '*', mask.search):
+                return Expr(mask.search, name, self.rop(), left)
+            case Expr(name, left, '-' | '/', mask.search):
+                return Expr(mask.search, left, self.op, name)
 
-def swap_expr(value, expr: Expr):
-    match expr:
-        case (expr.name, _, right):
-            return value, expr.rop, right
-        case (left, '+' | '*', expr.name):
-            return value, expr.rop, left
-        case (left, '-' | '/', expr.name):
-            return left, expr.op, value
+
+def load_data(filename):
+    with open(filename, 'r') as f:
+        for line in f:
+            line = line.rstrip()
+            name, expr = line.split(': ')
+            if expr.isnumeric():
+                yield name, Number(name, int(expr))
+            else:
+                left, op, right = expr.split()
+                deps[right] = deps[left] = name
+                yield name, Expr(name, left, op, right)
 
 
 def part_2(target: str) -> int:
@@ -54,15 +63,14 @@ def part_2(target: str) -> int:
         name = deps[search]
         if name not in monkeys:
             raise ValueError(f'No monkey for {name}')
-        left, op, right = monkeys[name].args
+        monkey = monkeys[name]
         if name == 'root':
-            branch = left if search == right else right
-            monkeys[search] = partial(lambda: monkeys[branch]())
+            branch = monkey.left if search == monkey.right else monkey.right
+            monkeys[search] = Number(search, monkeys[branch].eval())
             break
-        left, op, right = swap_expr(name, Expr(search, left, op, right))
-        monkeys[search] = partial(handle_expr, left, op, right)
+        monkeys[search] = monkey.swap(Mask(search))
         search = name
-    return monkeys[target]()
+    return monkeys[target].eval()
 
 
 if __name__ == '__main__':
@@ -75,5 +83,5 @@ if __name__ == '__main__':
 
     monkeys = dict(load_data(filename))
 
-    print('Part I:', monkeys['root']())
+    print('Part I:', monkeys['root'].eval())
     print('Part II:', part_2('humn'))
