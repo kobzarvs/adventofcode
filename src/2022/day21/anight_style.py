@@ -46,7 +46,6 @@ def part_2(target: str) -> int:
         if name not in monkeys:
             raise ValueError(f'No monkey for {name}')
         left, op, right = monkeys[name].args
-        assert op in ['+', '*', '-', '/']
         if name == 'root':
             branch = left if search == right else right
             monkeys[search] = partial(lambda: monkeys[branch]())
