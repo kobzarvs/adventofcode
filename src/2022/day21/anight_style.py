@@ -5,7 +5,7 @@ operators = {"+": add, "-": sub, "*": mul, "/": floordiv}
 reversed_ops = {'+': '-', '-': '+', '*': '/', '/': '*'}
 
 
-def handle_expr(name, left, op, right, updated):
+def handle_expr(left, op, right, updated):
     return operators[op](monkeys[left](), monkeys[right]())
 
 
@@ -15,32 +15,30 @@ def load_data(filename):
             line = line.rstrip()
             name, expr = line.split(': ')
             if expr.isnumeric():
-                yield name, partial(lambda name, value: int(value), name, expr)
+                yield name, partial(lambda value: int(value), expr)
             else:
                 left, op, right = expr.split()
-                yield name, partial(handle_expr, name, left, op, right, False)
+                yield name, partial(handle_expr, left, op, right, False)
 
 
 def find_monkey_expr(search, arr):
-    for value in arr.values():
-        if len(value.args) == 2:
+    for name, value in arr.items():
+        if len(value.args) < 4:
             continue
-        name, left, op, right, updated = value.args
+        left, op, right, updated = value.args
         if not updated and search in [left, right]:
             return name, left, op, right
     return None
 
 
 def reverse_expr(name, expr):
-    id, left, op, right = expr
-    new_expr = None
-    if left == name:
-        new_expr = (id, reversed_ops[op], right)
-    elif right == name:
+    key, left, op, right = expr
+    new_expr = (key, reversed_ops[op], right)
+    if right == name:
         if op in ['+', '*']:
-            new_expr = (id, reversed_ops[op], left)
+            new_expr = (key, reversed_ops[op], left)
         else:
-            new_expr = (left, op, id)
+            new_expr = (left, op, key)
     return new_expr
 
 
@@ -52,10 +50,10 @@ def part_2(search):
         if monkey[0] == 'root':
             branches = [monkey[1], monkey[3]]
             branches.remove(search)
-            monkeys[search] = partial(lambda key: monkeys[key](), branches[0])
+            monkeys[search] = partial(lambda: monkeys[branches[0]]())
             break
         left, op, right = reverse_expr(search, monkey)
-        monkeys[search] = partial(handle_expr, search, left, op, right, True)
+        monkeys[search] = partial(handle_expr, left, op, right, True)
         search = monkey[0]
     return monkeys['humn']
 
