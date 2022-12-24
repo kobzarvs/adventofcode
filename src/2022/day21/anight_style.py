@@ -24,9 +24,14 @@ class Expr:
     left: str
     op: str
     right: str
+    context = {}
+
+    @staticmethod
+    def get(name):
+        return Expr.context[name]
 
     def eval(self):
-        return operators[self.op](monkeys[self.left].eval(), monkeys[self.right].eval())
+        return operators[self.op](Expr.context[self.left].eval(), Expr.context[self.right].eval())
 
     def rop(self):
         return reversed_ops[self.op]
@@ -58,14 +63,14 @@ def part_2(target: str) -> int:
     search = target
     while True:
         name = deps[search]
-        monkey = monkeys[name]
+        monkey = Expr.context[name]
         if name == 'root':
             branch = monkey.left if search == monkey.right else monkey.right
-            monkeys[search] = Number(search, monkeys[branch].eval())
+            Expr.context[search] = Number(search, Expr.context[branch].eval())
             break
-        monkeys[search] = monkey.swap(Mask(search))
+        Expr.context[search] = monkey.swap(Mask(search))
         search = name
-    return monkeys[target].eval()
+    return Expr.get(target).eval()
 
 
 if __name__ == '__main__':
@@ -76,7 +81,7 @@ if __name__ == '__main__':
     else:
         filename = 'day21.long.txt'
 
-    monkeys = dict(load_data(filename))
+    Expr.context = dict(load_data(filename))
 
-    print('Part I:', monkeys['root'].eval())
+    print('Part I:', Expr.get('root').eval())
     print('Part II:', part_2('humn'))
