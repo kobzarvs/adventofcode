@@ -1,7 +1,6 @@
 from functools import partial
 from operator import add, sub, mul, floordiv
-from typing import Dict, Tuple, Callable
-
+from typing import Tuple
 
 Expr = Tuple[str, str, str]
 
@@ -27,15 +26,17 @@ def load_data(filename):
                 yield name, partial(handle_expr, left, op, right)
 
 
-def swap_expr(name: str, via_value: str, expr: Expr) -> Expr:
-    left, op, right = expr
-    new_expr = (via_value, reversed_ops[op], right)
-    if right == name:
-        if op in ['+', '*']:
-            new_expr = (via_value, reversed_ops[op], left)
-        else:
-            new_expr = (left, op, via_value)
-    return new_expr
+def swap_expr(name, value, expr):
+    class Tmp:
+        NAME = name
+
+    match expr:
+        case (Tmp.NAME, op, x):
+            return value, reversed_ops[op], x
+        case (x, op, Tmp.NAME) if op in ('+', '*'):
+            return value, reversed_ops[op], x
+        case (x, op, Tmp.NAME) if op in ('-', '/'):
+            return x, op, value
 
 
 def part_2(target: str) -> int:
@@ -45,6 +46,7 @@ def part_2(target: str) -> int:
         if name not in monkeys:
             raise ValueError(f'No monkey for {name}')
         left, op, right = monkeys[name].args
+        assert op in ['+', '*', '-', '/']
         if name == 'root':
             branch = left if search == right else right
             monkeys[search] = partial(lambda: monkeys[branch]())
