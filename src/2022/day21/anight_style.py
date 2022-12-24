@@ -58,8 +58,6 @@ def part_2(target: str) -> int:
     search = target
     while True:
         name = deps[search]
-        if name not in monkeys:
-            raise ValueError(f'No monkey for {name}')
         monkey = monkeys[name]
         if name == 'root':
             branch = monkey.left if search == monkey.right else monkey.right
