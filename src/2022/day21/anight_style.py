@@ -3,9 +3,10 @@ from operator import add, sub, mul, floordiv
 
 operators = {"+": add, "-": sub, "*": mul, "/": floordiv}
 reversed_ops = {'+': '-', '-': '+', '*': '/', '/': '*'}
+deps = {}
 
 
-def handle_expr(left, op, right, updated):
+def handle_expr(left, op, right):
     return operators[op](monkeys[left](), monkeys[right]())
 
 
@@ -18,44 +19,36 @@ def load_data(filename):
                 yield name, partial(lambda value: int(value), expr)
             else:
                 left, op, right = expr.split()
-                yield name, partial(handle_expr, left, op, right, False)
+                deps[right] = deps[left] = name
+                yield name, partial(handle_expr, left, op, right)
 
 
-def find_monkey_expr(search, arr):
-    for name, value in arr.items():
-        if len(value.args) < 4:
-            continue
-        left, op, right, updated = value.args
-        if not updated and search in [left, right]:
-            return name, left, op, right
-    return None
-
-
-def reverse_expr(name, expr):
-    key, left, op, right = expr
-    new_expr = (key, reversed_ops[op], right)
+def swap_expr(name, via_value, expr):
+    left, op, right = expr
+    new_expr = (via_value, reversed_ops[op], right)
     if right == name:
         if op in ['+', '*']:
-            new_expr = (key, reversed_ops[op], left)
+            new_expr = (via_value, reversed_ops[op], left)
         else:
-            new_expr = (left, op, key)
+            new_expr = (left, op, via_value)
     return new_expr
 
 
-def part_2(search):
+def part_2(target):
+    search = target
     while True:
-        monkey = find_monkey_expr(search, monkeys)
-        if monkey is None:
+        name = deps[search]
+        if name not in monkeys:
             break
-        if monkey[0] == 'root':
-            branches = [monkey[1], monkey[3]]
-            branches.remove(search)
-            monkeys[search] = partial(lambda: monkeys[branches[0]]())
+        left, op, right = monkeys[name].args
+        if name == 'root':
+            branch = left if search == right else right
+            monkeys[search] = partial(lambda: monkeys[branch]())
             break
-        left, op, right = reverse_expr(search, monkey)
-        monkeys[search] = partial(handle_expr, left, op, right, True)
-        search = monkey[0]
-    return monkeys['humn']
+        left, op, right = swap_expr(search, name, (left, op, right))
+        monkeys[search] = partial(handle_expr, left, op, right)
+        search = name
+    return monkeys[target]()
 
 
 if __name__ == '__main__':
@@ -69,4 +62,4 @@ if __name__ == '__main__':
     monkeys = dict(load_data(filename))
 
     print('Part I:', monkeys['root']())
-    print('Part II:', part_2('humn')())
+    print('Part II:', part_2('humn'))
