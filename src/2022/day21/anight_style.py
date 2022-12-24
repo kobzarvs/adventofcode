@@ -1,9 +1,6 @@
 from collections import namedtuple
 from dataclasses import dataclass
 from operator import add, sub, mul, floordiv
-from typing import Tuple
-
-Expr = Tuple[str, str, str]
 
 operators = {"+": add, "-": sub, "*": mul, "/": floordiv}
 reversed_ops = {'+': '-', '-': '+', '*': '/', '/': '*'}
