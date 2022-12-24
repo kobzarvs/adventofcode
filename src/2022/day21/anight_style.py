@@ -35,9 +35,9 @@ class Expr:
         match self:
             case Expr(name, mask.search, _, right):
                 return Expr(mask.search, name, self.rop(), right)
-            case Expr(name, left, '+' | '*', mask.search):
+            case Expr(name, left, op, mask.search) if op in ('+', '*'):
                 return Expr(mask.search, name, self.rop(), left)
-            case Expr(name, left, '-' | '/', mask.search):
+            case Expr(name, left, op, mask.search) if op in ('-', '/'):
                 return Expr(mask.search, left, self.op, name)
 
 
