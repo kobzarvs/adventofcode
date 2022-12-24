@@ -29,14 +29,15 @@ def load_data(filename):
 def swap_expr(name, value, expr):
     class Tmp:
         NAME = name
+    left, op, right = expr
 
     match expr:
-        case (Tmp.NAME, op, x):
-            return value, reversed_ops[op], x
-        case (x, op, Tmp.NAME) if op in ('+', '*'):
-            return value, reversed_ops[op], x
-        case (x, op, Tmp.NAME) if op in ('-', '/'):
-            return x, op, value
+        case (Tmp.NAME, _, _):
+            return value, reversed_ops[op], right
+        case (_, _, Tmp.NAME) if op in ('+', '*'):
+            return value, reversed_ops[op], left
+        case (_, _, Tmp.NAME) if op in ('-', '/'):
+            return left, op, value
 
 
 def part_2(target: str) -> int:
