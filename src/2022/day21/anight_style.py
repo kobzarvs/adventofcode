@@ -1,16 +1,20 @@
 from functools import partial
 from operator import add, sub, mul, floordiv
-
-operators = {"+": add, "-": sub, "*": mul, "/": floordiv}
-reversed_ops = {'+': '-', '-': '+', '*': '/', '/': '*'}
-deps = {}
+from typing import Dict, Tuple, Callable
 
 
-def handle_expr(left, op, right):
+Expr = Tuple[str, str, str]
+
+operators: Dict[str, Callable[[str, str], int]] = {"+": add, "-": sub, "*": mul, "/": floordiv}
+reversed_ops: Dict[str, str] = {'+': '-', '-': '+', '*': '/', '/': '*'}
+deps: Dict[str, str] = {}
+
+
+def handle_expr(left: str, op: str, right: str) -> int:
     return operators[op](monkeys[left](), monkeys[right]())
 
 
-def load_data(filename):
+def load_data(filename) -> Dict[str, partial[[str, str, str], int]]:
     with open(filename, 'r') as f:
         for line in f:
             line = line.rstrip()
@@ -23,9 +27,9 @@ def load_data(filename):
                 yield name, partial(handle_expr, left, op, right)
 
 
-def swap_expr(name, via_value, expr):
+def swap_expr(name: str, via_value: str, expr: Expr) -> Expr:
     left, op, right = expr
-    new_expr = (via_value, reversed_ops[op], right)
+    new_expr: Expr = (via_value, reversed_ops[op], right)
     if right == name:
         if op in ['+', '*']:
             new_expr = (via_value, reversed_ops[op], left)
@@ -34,7 +38,7 @@ def swap_expr(name, via_value, expr):
     return new_expr
 
 
-def part_2(target):
+def part_2(target: str) -> int:
     search = target
     while True:
         name = deps[search]
