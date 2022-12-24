@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from functools import partial
 from operator import add, sub, mul, floordiv
 from typing import Tuple
@@ -26,18 +27,25 @@ def load_data(filename):
                 yield name, partial(handle_expr, left, op, right)
 
 
-def swap_expr(name, value, expr):
-    class Tmp:
-        NAME = name
-    left, op, right = expr
+@dataclass
+class Expr:
+    name: str
+    left: str
+    op: str
+    right: str
 
+    def rop(self):
+        return reversed_ops[self.op]
+
+
+def swap_expr(value, expr: Expr):
     match expr:
-        case (Tmp.NAME, _, _):
-            return value, reversed_ops[op], right
-        case (_, _, Tmp.NAME) if op in ('+', '*'):
-            return value, reversed_ops[op], left
-        case (_, _, Tmp.NAME) if op in ('-', '/'):
-            return left, op, value
+        case (expr.name, _, right):
+            return value, expr.rop, right
+        case (left, '+' | '*', expr.name):
+            return value, expr.rop, left
+        case (left, '-' | '/', expr.name):
+            return left, expr.op, value
 
 
 def part_2(target: str) -> int:
@@ -51,7 +59,7 @@ def part_2(target: str) -> int:
             branch = left if search == right else right
             monkeys[search] = partial(lambda: monkeys[branch]())
             break
-        left, op, right = swap_expr(search, name, (left, op, right))
+        left, op, right = swap_expr(name, Expr(search, left, op, right))
         monkeys[search] = partial(handle_expr, left, op, right)
         search = name
     return monkeys[target]()
