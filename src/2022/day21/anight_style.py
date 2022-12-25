@@ -1,16 +1,21 @@
 from __future__ import annotations
 
 import re
-from collections import namedtuple
 from dataclasses import dataclass
 from operator import add, sub, mul, floordiv
-from typing import Dict, ClassVar
+from typing import Dict, ClassVar, NamedTuple
 
 operators = {"+": add, "-": sub, "*": mul, "/": floordiv}
 inv_ops = {'+': '-', '-': '+', '*': '/', '/': '*'}
 
-Mask = namedtuple('Mask', 'NAME')
-Number = namedtuple('Number', 'name value')
+
+class Mask(NamedTuple):
+    NAME: str
+
+
+class Number(NamedTuple):
+    name: str
+    value: int
 
 
 @dataclass
