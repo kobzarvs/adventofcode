@@ -34,15 +34,6 @@ class Expr:
     def inv_op(self):
         return inv_ops[self.op]
 
-    @staticmethod
-    def get(name):
-        return Expr.context[name]
-
-    @staticmethod
-    def get_all_refs(name):
-        while (name := Expr.refs[name]) and name in Expr.refs:
-            yield Expr.get(name)
-
     def invert(self, via):
         target = Mask(via)
         new_expr = Expr(target.NAME, self.name, self.inv_op, self.right)
@@ -53,6 +44,15 @@ class Expr:
                 new_expr = Expr(target.NAME, self.left, self.op, self.name)
         Expr.context[target.NAME] = new_expr
         return self.name, new_expr
+
+    @staticmethod
+    def get(name):
+        return Expr.context[name]
+
+    @staticmethod
+    def get_all_refs(name):
+        while (name := Expr.refs[name]) and name in Expr.refs:
+            yield Expr.get(name)
 
 
 @dataclass
