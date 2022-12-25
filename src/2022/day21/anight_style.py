@@ -6,7 +6,7 @@ operators = {"+": add, "-": sub, "*": mul, "/": floordiv}
 reversed_ops = {'+': '-', '-': '+', '*': '/', '/': '*'}
 deps = {}
 
-Mask = namedtuple('Mask', 'search replace', defaults=['', ''])
+Mask = namedtuple('Mask', 'NAME', defaults=[''])
 
 
 @dataclass
@@ -36,14 +36,14 @@ class Expr:
     def rop(self):
         return reversed_ops[self.op]
 
-    def swap(self, mask: Mask):
+    def swap(self, target: Mask):
         match self:
-            case Expr(name, mask.search, _, right):
-                return Expr(mask.search, name, self.rop(), right)
-            case Expr(name, left, '+' | '*', mask.search):
-                return Expr(mask.search, name, self.rop(), left)
-            case Expr(name, left, '-' | '/', mask.search):
-                return Expr(mask.search, left, self.op, name)
+            case Expr(name, target.NAME, _, right):
+                return Expr(target.NAME, name, self.rop(), right)
+            case Expr(name, left, '+' | '*', target.NAME):
+                return Expr(target.NAME, name, self.rop(), left)
+            case Expr(name, left, '-' | '/', target.NAME):
+                return Expr(target.NAME, left, self.op, name)
 
 
 def load_data(filename):
@@ -68,7 +68,7 @@ def part_2(target: str) -> int:
             branch = monkey.left if search == monkey.right else monkey.right
             Expr.context[search] = Number(search, Expr.context[branch].eval())
             break
-        Expr.context[search] = monkey.swap(Mask(search))
+        Expr.context[search] = monkey.swap(Mask(NAME=search))
         search = name
     return Expr.get(target).eval()
 
