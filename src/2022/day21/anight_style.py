@@ -18,7 +18,7 @@ class Number:
         return self.value
 
 
-@dataclass
+@dataclass(match_args=True)
 class Expr:
     name: str
     left: str
@@ -38,12 +38,12 @@ class Expr:
 
     def swap(self, target: Mask):
         match self:
-            case Expr(name, target.NAME, _, right):
-                return Expr(target.NAME, name, self.rop(), right)
-            case Expr(name, left, '+' | '*', target.NAME):
-                return Expr(target.NAME, name, self.rop(), left)
-            case Expr(name, left, '-' | '/', target.NAME):
-                return Expr(target.NAME, left, self.op, name)
+            case Expr(_, target.NAME, _, _):
+                return Expr(target.NAME, self.name, self.rop(), self.right)
+            case Expr(_, _, '+' | '*', target.NAME):
+                return Expr(target.NAME, self.name, self.rop(), self.left)
+            case Expr(_, _, '-' | '/', target.NAME):
+                return Expr(target.NAME, self.left, self.op, self.name)
 
 
 def load_data(filename):
