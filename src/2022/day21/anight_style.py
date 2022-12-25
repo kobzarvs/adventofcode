@@ -3,45 +3,39 @@ from dataclasses import dataclass
 from operator import add, sub, mul, floordiv
 
 operators = {"+": add, "-": sub, "*": mul, "/": floordiv}
-reversed_ops = {'+': '-', '-': '+', '*': '/', '/': '*'}
+inv_ops = {'+': '-', '-': '+', '*': '/', '/': '*'}
 deps = {}
 
 Mask = namedtuple('Mask', 'NAME', defaults=[''])
-
-
-@dataclass
-class Number:
-    name: str
-    value: int
-
-    def eval(self):
-        return self.value
+Number = namedtuple('Number', 'name value')
 
 
 @dataclass(match_args=True)
 class Expr:
     name: str
-    left: str
-    op: str
-    right: str
+    left: str | int | float
+    op: str = '+'
+    right: str = None
     context = {}
 
     @staticmethod
     def get(name):
         return Expr.context[name]
 
-    def eval(self):
-        return operators[self.op](Expr.context[self.left].eval(), Expr.context[self.right].eval())
+    @property
+    def value(self):
+        return operators[self.op](Expr.context[self.left].value, Expr.context[self.right].value)
 
-    def rop(self):
-        return reversed_ops[self.op]
+    @property
+    def inv_op(self):
+        return inv_ops[self.op]
 
     def swap(self, target: Mask):
         match self:
             case Expr(_, target.NAME, _, _):
-                return Expr(target.NAME, self.name, self.rop(), self.right)
+                return Expr(target.NAME, self.name, self.inv_op, self.right)
             case Expr(_, _, '+' | '*', target.NAME):
-                return Expr(target.NAME, self.name, self.rop(), self.left)
+                return Expr(target.NAME, self.name, self.inv_op, self.left)
             case Expr(_, _, '-' | '/', target.NAME):
                 return Expr(target.NAME, self.left, self.op, self.name)
 
@@ -66,11 +60,11 @@ def part_2(target: str) -> int:
         monkey = Expr.context[name]
         if name == 'root':
             branch = monkey.left if search == monkey.right else monkey.right
-            Expr.context[search] = Number(search, Expr.context[branch].eval())
+            Expr.context[search] = Number(search, Expr.context[branch].value)
             break
         Expr.context[search] = monkey.swap(Mask(NAME=search))
         search = name
-    return Expr.get(target).eval()
+    return Expr.get(target).value
 
 
 if __name__ == '__main__':
@@ -83,5 +77,5 @@ if __name__ == '__main__':
 
     Expr.context = dict(load_data(filename))
 
-    print('Part I:', Expr.get('root').eval())
+    print('Part I:', Expr.get('root').value)
     print('Part II:', part_2('humn'))
