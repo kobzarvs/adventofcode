@@ -3,17 +3,19 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 from operator import add, sub, mul, floordiv
-from typing import Dict, ClassVar, NamedTuple
+from typing import Dict, ClassVar
 
 operators = {"+": add, "-": sub, "*": mul, "/": floordiv}
 inv_ops = {'+': '-', '-': '+', '*': '/', '/': '*'}
 
 
-class Mask(NamedTuple):
+@dataclass
+class Mask:
     NAME: str
 
 
-class Number(NamedTuple):
+@dataclass
+class Number:
     name: str
     value: int
 
