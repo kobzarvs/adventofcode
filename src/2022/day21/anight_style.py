@@ -1,3 +1,4 @@
+import re
 from collections import namedtuple
 from dataclasses import dataclass
 from operator import add, sub, mul, floordiv
@@ -54,16 +55,27 @@ class Expr:
         return self.name, new_expr
 
 
+@dataclass
+class RegexEqual(str):
+    string: str
+    match: re.Match = None
+
+    def __eq__(self, pattern):
+        self.match = re.search(pattern, self.string)
+        return self.match is not None
+
+    def __getattr__(self, item):
+        return self.match[item]
+
+
 def load_data(filename):
     with open(filename, 'r') as f:
         for line in f:
-            line = line.rstrip()
-            name, expr = line.split(': ')
-            if expr.isnumeric():
-                yield name, Number(name, int(expr))
-            else:
-                left, op, right = expr.split()
-                yield name, Expr(name, left, op, right, ref=True)
+            match RegexEqual(line.rstrip()):
+                case r'(?P<name>\w+): (?P<value>\d+)' as e:
+                    yield e.name, Number(e.name, int(e.value))
+                case r'(?P<name>\w+): (?P<left>\w+) (?P<op>[+*-/]) (?P<right>\w+)' as e:
+                    yield e.name, Expr(e.name, e.left, e.op, e.right, ref=True)
 
 
 def part_2(target):
