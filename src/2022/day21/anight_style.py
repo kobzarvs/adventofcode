@@ -70,7 +70,7 @@ def part_2(target):
     search = target
     for monkey in Expr.get_all_refs(target):
         if monkey.name != 'root':
-            search, expr = monkey.invert(search)
+            search, _ = monkey.invert(search)
     else:
         root = Expr.get('root')
         branch = root.left if search == root.right else root.right
