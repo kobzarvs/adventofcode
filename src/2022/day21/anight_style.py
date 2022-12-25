@@ -42,8 +42,8 @@ class Expr:
         while name in Expr.refs:
             yield Expr.get(name := Expr.refs[name])
 
-    def invert(self, target):
-        target = Mask(target)
+    def invert(self, via):
+        target = Mask(via)
         new_expr = Expr(target.NAME, self.name, self.inv_op, self.right)
         match self:
             case Expr(_, _, '+' | '*', target.NAME):
@@ -70,7 +70,7 @@ def part_2(target):
     search = target
     for monkey in Expr.get_all_refs(target):
         if monkey.name != 'root':
-            search, _ = monkey.invert(search)
+            search, _ = monkey.invert(via=search)
     else:
         root = Expr.get('root')
         branch = root.left if search == root.right else root.right
