@@ -1,24 +1,28 @@
+from __future__ import annotations
+
 import re
 from collections import namedtuple
 from dataclasses import dataclass
 from operator import add, sub, mul, floordiv
+from typing import Dict, ClassVar
 
 operators = {"+": add, "-": sub, "*": mul, "/": floordiv}
 inv_ops = {'+': '-', '-': '+', '*': '/', '/': '*'}
 
-Mask = namedtuple('Mask', 'NAME', defaults=[''])
+Mask = namedtuple('Mask', 'NAME')
 Number = namedtuple('Number', 'name value')
 
 
-@dataclass(match_args=True)
+@dataclass
 class Expr:
     name: str
     left: str
     op: str
     right: str
     ref: bool = False
-    context = {}
-    refs = {}
+
+    context: ClassVar[Dict[str, Expr | Number]] = {}
+    refs: ClassVar[Dict[str, str]] = {}
 
     def __new__(cls, *args, **kwargs):
         if 'ref' in kwargs:
@@ -58,7 +62,7 @@ class Expr:
 @dataclass
 class RegexEqual(str):
     string: str
-    match: re.Match = None
+    match: re.Match | None = None
 
     def __eq__(self, pattern):
         self.match = re.search(pattern, self.string)
