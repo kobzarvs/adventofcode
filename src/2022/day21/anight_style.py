@@ -38,23 +38,20 @@ class Expr:
         return Expr.context[name]
 
     @staticmethod
-    def get_by_ref(name):
-        return Expr.get(Expr.refs[name])
-
-    @staticmethod
-    def put(other):
-        Expr.context[other.name] = other
-        return other
+    def get_all_refs(name):
+        while name in Expr.refs:
+            yield Expr.get(name := Expr.refs[name])
 
     def invert(self, target):
         target = Mask(target)
+        new_expr = Expr(target.NAME, self.name, self.inv_op, self.right)
         match self:
-            case Expr(_, target.NAME, _, _):
-                return Expr(target.NAME, self.name, self.inv_op, self.right)
             case Expr(_, _, '+' | '*', target.NAME):
-                return Expr(target.NAME, self.name, self.inv_op, self.left)
+                new_expr = Expr(target.NAME, self.name, self.inv_op, self.left)
             case Expr(_, _, '-' | '/', target.NAME):
-                return Expr(target.NAME, self.left, self.op, self.name)
+                new_expr = Expr(target.NAME, self.left, self.op, self.name)
+        Expr.context[target.NAME] = new_expr
+        return self.name, new_expr
 
 
 def load_data(filename):
@@ -69,16 +66,15 @@ def load_data(filename):
                 yield name, Expr(name, left, op, right, ref=True)
 
 
-def part_2(target: str) -> int:
+def part_2(target):
     search = target
-    while True:
-        monkey = Expr.get_by_ref(search)
-        if monkey.name == 'root':
-            branch = monkey.left if search == monkey.right else monkey.right
-            Expr.put(Number(search, Expr.get(branch).value))
-            break
-        Expr.put(monkey.invert(search))
-        search = monkey.name
+    for monkey in Expr.get_all_refs(target):
+        if monkey.name != 'root':
+            search, expr = monkey.invert(search)
+    else:
+        root = Expr.get('root')
+        branch = root.left if search == root.right else root.right
+        Expr.context[search] = Number(search, Expr.get(branch).value)
     return Expr.get(target).value
 
 
