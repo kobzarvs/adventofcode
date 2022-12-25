@@ -4,7 +4,6 @@ from operator import add, sub, mul, floordiv
 
 operators = {"+": add, "-": sub, "*": mul, "/": floordiv}
 inv_ops = {'+': '-', '-': '+', '*': '/', '/': '*'}
-deps = {}
 
 Mask = namedtuple('Mask', 'NAME', defaults=[''])
 Number = namedtuple('Number', 'name value')
@@ -13,14 +12,18 @@ Number = namedtuple('Number', 'name value')
 @dataclass(match_args=True)
 class Expr:
     name: str
-    left: str | int | float
-    op: str = '+'
-    right: str = None
+    left: str
+    op: str
+    right: str
+    ref: bool = False
     context = {}
+    refs = {}
 
-    @staticmethod
-    def get(name):
-        return Expr.context[name]
+    def __new__(cls, *args, **kwargs):
+        if 'ref' in kwargs:
+            cls.refs[args[1]] = args[0]
+            cls.refs[args[3]] = args[0]
+        return super().__new__(cls)
 
     @property
     def value(self):
@@ -30,7 +33,21 @@ class Expr:
     def inv_op(self):
         return inv_ops[self.op]
 
-    def swap(self, target: Mask):
+    @staticmethod
+    def get(name):
+        return Expr.context[name]
+
+    @staticmethod
+    def get_by_ref(name):
+        return Expr.get(Expr.refs[name])
+
+    @staticmethod
+    def put(other):
+        Expr.context[other.name] = other
+        return other
+
+    def invert(self, target):
+        target = Mask(target)
         match self:
             case Expr(_, target.NAME, _, _):
                 return Expr(target.NAME, self.name, self.inv_op, self.right)
@@ -49,21 +66,19 @@ def load_data(filename):
                 yield name, Number(name, int(expr))
             else:
                 left, op, right = expr.split()
-                deps[right] = deps[left] = name
-                yield name, Expr(name, left, op, right)
+                yield name, Expr(name, left, op, right, ref=True)
 
 
 def part_2(target: str) -> int:
     search = target
     while True:
-        name = deps[search]
-        monkey = Expr.context[name]
-        if name == 'root':
+        monkey = Expr.get_by_ref(search)
+        if monkey.name == 'root':
             branch = monkey.left if search == monkey.right else monkey.right
-            Expr.context[search] = Number(search, Expr.context[branch].value)
+            Expr.put(Number(search, Expr.get(branch).value))
             break
-        Expr.context[search] = monkey.swap(Mask(NAME=search))
-        search = name
+        Expr.put(monkey.invert(search))
+        search = monkey.name
     return Expr.get(target).value
 
 
