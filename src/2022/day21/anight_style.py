@@ -39,8 +39,8 @@ class Expr:
 
     @staticmethod
     def get_all_refs(name):
-        while name in Expr.refs:
-            yield Expr.get(name := Expr.refs[name])
+        while (name := Expr.refs[name]) and name in Expr.refs:
+            yield Expr.get(name)
 
     def invert(self, via):
         target = Mask(via)
@@ -69,12 +69,11 @@ def load_data(filename):
 def part_2(target):
     search = target
     for monkey in Expr.get_all_refs(target):
-        if monkey.name != 'root':
-            search, _ = monkey.invert(via=search)
-    else:
-        root = Expr.get('root')
-        branch = root.left if search == root.right else root.right
-        Expr.context[search] = Number(search, Expr.get(branch).value)
+        search, _ = monkey.invert(via=search)
+
+    root = Expr.get('root')
+    branch = root.left if search == root.right else root.right
+    Expr.context[search] = Number(search, Expr.get(branch).value)
     return Expr.get(target).value
 
 
