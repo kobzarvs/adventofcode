@@ -1,0 +1,9 @@
+data := read_file('2020-18.txt').lines
+print(data)
+
+#+['precedence'] = *['precedence']
+#print! 'Part I:', (data map eval).sum(data.map eval).sum
+
+#*['precedence'] = -['precedence']
+#print! 'Part II:', (data.map eval).sum
+
