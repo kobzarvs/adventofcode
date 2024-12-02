@@ -10,3 +10,23 @@ print! 'Part I:', solve(); # 12956356593940
 print! 'Part II:', solve(); # 94240043727614
 
 
+load_data := \file -> (
+    data := read_file(file).lines;
+    data map split(' ') map map! int
+);
+
+reports := load_data('data.txt');
+is_valid_dists := \report -> report window(2) map(\[x,y] -> abs(y-x)) all(\x -> 0 < x < 4);
+is_valid_dir := \report -> report.window(2).map(\[x,y] -> signum! y-x).unique.len == 1;
+is_safe := \report -> is_valid_dists(report) & is_valid_dir(report);
+
+part_1 := \ -> len! reports.filter! \report -> is_safe(report);
+
+part_2 := \ -> len! reports.filter! \report -> (
+    if (is_safe(report) == 0) (
+        return report
+            .combinations(report.len - 1)
+            .any(\sub_report -> is_safe(sub_report) == 1);
+    );
+    true
+);
