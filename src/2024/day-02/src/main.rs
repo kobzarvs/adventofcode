@@ -18,13 +18,13 @@ fn main() -> io::Result<()> {
 
     let safe_reports = reports
         .iter()
-        .filter(|line| is_safe_report(&line, false));
+        .filter(|report| is_safe_report(&report, false));
 
     println!("Part I: {:?}", safe_reports.count());
 
     let safe_reports = reports
         .iter()
-        .filter(|line| is_safe_report(&line, true));
+        .filter(|report| is_safe_report(&report, true));
 
     println!("Part II: {:?}", safe_reports.count());
 
