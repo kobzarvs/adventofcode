@@ -15,6 +15,8 @@ fn main() {
     //-------------------------------------------------------------------------------//
 
     let re = Regex::new(r"(mul\(\d+,\d+\))|(don't\(\))|(do\(\))").unwrap();
+    let re_mul = Regex::new(r"mul\((\d+),(\d+)\)").unwrap();
+
     let (mut part_1, mut part_2) = (0, 0);
     let mut skip = false;
 
@@ -23,7 +25,6 @@ fn main() {
             "do()" => skip = false,
             "don't()" => skip = true,
             expr => {
-                let re_mul = Regex::new(r"mul\((\d+),(\d+)\)").unwrap();
                 let result = re_mul.captures(expr).and_then(|captures| {
                     let a = captures.get(1)?.as_str().parse::<u32>().unwrap();
                     let b = captures.get(2)?.as_str().parse::<u32>().unwrap();
