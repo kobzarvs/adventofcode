@@ -1,170 +1,103 @@
-use std::path::PathBuf;
-use std::{env, fs};
+use day_04::{process_matrix, read_file};
 
-static WINDOW_SIZE: usize = 4;
 static XMAS: &str = "XMAS";
+static SAMX: &str = "SAMX";
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
-    let filename = args
-        .get(1)
-        .map(|s| PathBuf::from(s))
-        .unwrap_or_else(|| PathBuf::from("test.txt"));
-    println!("Input file: {:?}", filename);
-    let input = fs::read_to_string(filename).expect("Unable to read file");
-
-    //-------------------------------------------------------------------------------//
+    let input = read_file();
 
     let mut matrix: Vec<Vec<char>> = vec![];
 
+    parse(input, &mut matrix);
+
+    let part_1 = solve_1(&matrix);
+    let part_2 = solve_2(&matrix);
+
+    println!("Part I: {:?}", part_1); // 2427
+    println!("Part II: {:?}", part_2); // 1900
+}
+
+fn parse(input: String, mut matrix: &mut Vec<Vec<char>>) {
     input.lines().for_each(|line| {
         let row: Vec<char> = line.chars().collect();
-        println!("{:?}", row);
         matrix.push(row);
     });
-    println!();
-
-    let part_1 = find_xmas(&matrix);
-    println!("Part 1: {:?}", part_1);
 }
 
-fn transpose(matrix: &Vec<Vec<char>>) -> Vec<Vec<char>> {
-    let rows = matrix.len();
-    let cols = matrix[0].len();
+fn solve_1(matrix: &Vec<Vec<char>>) -> i32 {
+    let mut count = 0;
+    let mut visited_horizont: Vec<(usize, usize)> = vec![];
+    let mut visited_vertical: Vec<(usize, usize)> = vec![];
+    let size = 4;
 
-    (0..cols)
-        .map(|col| (0..rows).map(|row| matrix[row][col]).collect())
-        .collect()
-}
-
-fn find_xmas(grid: &Vec<Vec<char>>) -> i32 {
-    let mut matrix = grid.iter().cloned().collect::<Vec<_>>();
-    let rows = matrix.len();
-    let cols = matrix[0].len();
-    let mut counts = 0;
-    let mut new_matrix: Vec<Vec<String>> = vec![vec![" ".to_string(); cols]; rows];
-    let mut visited_words: Vec<Vec<(usize, usize)>> = vec![vec![]; 2];
-
-    fn yx(n: usize, y: usize, x: usize) -> (usize, usize) {
-        if n == 0 {
-            (y, x)
-        } else {
-            (x, y)
-        }
-    }
-
-    for n in 0..2 {
-        println!("N: {}", n);
-
-        process_matrix(&matrix, (WINDOW_SIZE, WINDOW_SIZE), |window, y, x| {
-            println!("{}:{}", y, x);
-            for (ry, row) in window.iter().enumerate() {
-                if visited_words[n].contains(&(y + ry, x)) {
-                    continue;
-                }
-                println!("{:?}", row);
+    process_matrix(&matrix.clone(), XMAS.len(), |window, y, x| {
+        for (ry, row) in window.iter().enumerate() {
+            if !visited_horizont.contains(&(y + ry, x)) {
                 let word = String::from_iter(row);
-                let word_rev = String::from_iter(row.iter().rev());
-                if word == XMAS {
-                    counts += 1;
-                    println!("{} : {:?} == {} {} {}", counts, row, XMAS, word, counts);
-                    word.chars().enumerate().for_each(|(rx, c)| {
-                        let sym = new_matrix[yx(n, y + ry, x + rx).0][yx(n, y + ry, x + rx).1].clone();
-                        if sym == " " {
-                            new_matrix[yx(n, y + ry, x + rx).0][yx(n, y + ry, x + rx).1] = c.to_string();
-                        } else {
-                            new_matrix[yx(n, y + ry, x + rx).0][yx(n, y + ry, x + rx).1] = format!("[{}]", sym);
-                        }
-                    });
+                if word == XMAS || word == SAMX {
+                    count += 1;
                 }
-                if word_rev == XMAS {
-                    counts += 1;
-                    println!("{} : {:?} == {} {} {}", counts, row, XMAS, word_rev, counts);
-                    word.chars().enumerate().for_each(|(rx, c)| {
-                        let sym = new_matrix[yx(n, y + ry, x + rx).0][yx(n, y + ry, x + rx).1].clone();
-                        if sym == " " {
-                            new_matrix[yx(n, y + ry, x + rx).0][yx(n, y + ry, x + rx).1] = c.to_string();
-                        } else {
-                            new_matrix[yx(n, y + ry, x + rx).0][yx(n, y + ry, x + rx).1] = format!("[{}]", sym);
-                        }
-                    });
-                }
-                visited_words[n].push((y + ry, x));
+                visited_horizont.push((y + ry, x));
             }
 
-            if n == 1 {
-                return;
+            if !visited_vertical.contains(&(y, x + ry)) {
+                let mut vertical_word: Vec<char> = vec![];
+                for i in 0..size {
+                    vertical_word.push(window[i][ry]);
+                }
+                let word = vertical_word.into_iter().collect::<String>();
+                if [XMAS, SAMX].contains(&word.as_str()) {
+                    count += 1;
+                }
+                visited_vertical.push((y, x + ry));
             }
+        }
 
-            // check diagonals
-            let mut diag_1: Vec<char> = vec![];
-            let mut diag_2: Vec<char> = vec![];
-            for i in 0..WINDOW_SIZE {
-                diag_1.push(window[i][i]);
-                diag_2.push(window[i][WINDOW_SIZE - i - 1]);
-            }
-            let word = String::from_iter(diag_1.iter().cloned());
-            let word_rev = String::from_iter(diag_1.iter().rev());
-            let word2 = String::from_iter(diag_2.iter().cloned());
-            let word2_rev = String::from_iter(diag_2.iter().rev());
-            if word == XMAS {
-                counts += 1;
-                println!("diag {} : {:?} == {:?} {}", counts, XMAS, word, counts);
-                for i in 0..WINDOW_SIZE {
-                    new_matrix[yx(n,y+i,x+i).0][yx(n,y+i,x+i).1] = window[i][i].to_string();
-                }
-            }
-            if word_rev == XMAS {
-                counts += 1;
-                println!("rev diag {} : {:?} == {:?} {}", counts, XMAS, word_rev, counts);
-                for i in 0..WINDOW_SIZE {
-                    new_matrix[yx(n,y+i,x+i).0][yx(n,y+i,x+i).1] = window[i][i].to_string();
-                }
-            }
-            if word2 == XMAS {
-                counts += 1;
-                println!("diag {} : {:?} == {:?} {}", counts, XMAS, word2, counts);
-                for i in 0..WINDOW_SIZE {
-                    new_matrix[yx(n,y+i,x + WINDOW_SIZE - i - 1).0][yx(n,y+i,x + WINDOW_SIZE - i - 1).1] = window[i][WINDOW_SIZE - i - 1].to_string();
-                }
-            }
-            if word2_rev == XMAS {
-                counts += 1;
-                println!("rev diag {} : {:?} == {:?} {}", counts, XMAS, word2_rev, counts);
-                for i in 0..WINDOW_SIZE {
-                    new_matrix[yx(n,y+i,x + WINDOW_SIZE - i - 1).0][yx(n,y+i,x + WINDOW_SIZE - i - 1).1] = window[i][WINDOW_SIZE - i - 1].to_string();
-                }
-            }
+        // check diagonals
+        let mut diag_1: Vec<char> = vec![];
+        let mut diag_2: Vec<char> = vec![];
+
+        for i in 0..size {
+            diag_1.push(window[i][i]);
+            diag_2.push(window[i][size - i - 1]);
+        }
+
+        let diag_word_1 = String::from_iter(diag_1.iter().cloned());
+        let diag_word_2 = String::from_iter(diag_2.iter().cloned());
+
+        if diag_word_1 == XMAS || diag_word_1 == SAMX {
+            count += 1;
+        }
+        if diag_word_2 == XMAS || diag_word_2 == SAMX {
+            count += 1;
+        }
+    });
+
+    count
+}
+
+fn solve_2(matrix: &Vec<Vec<char>>) -> i32 {
+    let mut count = 0;
+    let size = 3;
+
+    process_matrix(&matrix, size, |window, _y, _x| {
+        let mut diag_left_top: Vec<char> = vec![];
+        let mut diag_left_bottom: Vec<char> = vec![];
+
+        for i in 0..size {
+            diag_left_top.push(window[i][i]);
+            diag_left_bottom.push(window[size - i - 1][i]);
+        }
+
+        let pass = [diag_left_bottom, diag_left_top].iter().all(|diag| {
+            let word = diag.into_iter().collect::<String>();
+            ["MAS", "SAM"].contains(&word.as_str())
         });
 
-        if n == 0 {
-            matrix = transpose(&matrix.clone());
+        if pass {
+            count += 1;
         }
-    }
-
-    grid.iter().for_each(|row| {
-        println!("{:?}", row);
-    });
-    println!();
-    new_matrix.iter().for_each(|row| {
-        println!("{:?}", row);
     });
 
-    counts
-}
-
-fn process_matrix<F>(matrix: &Vec<Vec<char>>, size: (usize, usize), mut processor: F)
-where
-    F: FnMut(&Vec<Vec<char>>, usize, usize)
-{
-    for y in 0..matrix.len() - size.0 + 1 {
-        for x in 0..matrix[0].len() - size.1 + 1 {
-            let mut window = vec![];
-            for i in 0..size.0 {
-                window.push(matrix[y + i][x..x + size.1].to_vec());
-            }
-
-            processor(&window, y, x);
-        }
-    }
+    count
 }
