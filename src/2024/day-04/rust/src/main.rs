@@ -41,10 +41,7 @@ fn solve_1(matrix: &Vec<Vec<char>>) -> i32 {
             }
 
             if !visited_vertical.contains(&(y, x + ry)) {
-                let mut vertical_word: Vec<char> = vec![];
-                for i in 0..size {
-                    vertical_word.push(window[i][ry]);
-                }
+                let vertical_word: Vec<char> = (0..size).map(|i| window[i][ry]).collect();
                 let word = vertical_word.into_iter().collect::<String>();
                 if word == XMAS || word == SAMX {
                     count += 1;
@@ -54,23 +51,12 @@ fn solve_1(matrix: &Vec<Vec<char>>) -> i32 {
         }
 
         // check diagonals
-        let mut diag_1: Vec<char> = vec![];
-        let mut diag_2: Vec<char> = vec![];
+        let diag_1: String = (0..size).map(|i| window[i][i]).collect();
+        let diag_2: String = (0..size).map(|i| window[i][size - i - 1]).collect();
 
-        for i in 0..size {
-            diag_1.push(window[i][i]);
-            diag_2.push(window[i][size - i - 1]);
-        }
-
-        let diag_word_1 = String::from_iter(diag_1.iter());
-        let diag_word_2 = String::from_iter(diag_2.iter());
-
-        if diag_word_1 == XMAS || diag_word_1 == SAMX {
-            count += 1;
-        }
-        if diag_word_2 == XMAS || diag_word_2 == SAMX {
-            count += 1;
-        }
+        count += [diag_1, diag_2].iter()
+            .filter(|&d| d == XMAS || d == SAMX)
+            .count() as i32;
     });
 
     count
