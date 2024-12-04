@@ -24,7 +24,7 @@ fn parse(input: String, matrix: &mut Vec<Vec<char>>) {
     });
 }
 
-fn solve_1(matrix: &Vec<Vec<char>>) -> i32 {
+fn solve_1(matrix: &Vec<Vec<char>>) -> usize {
     let mut count = 0;
     let mut visited_horizont: Vec<(usize, usize)> = vec![];
     let mut visited_vertical: Vec<(usize, usize)> = vec![];
@@ -57,13 +57,13 @@ fn solve_1(matrix: &Vec<Vec<char>>) -> i32 {
         count += diagonals
             .iter()
             .filter(|&d| d == XMAS || d == SAMX)
-            .count() as i32;
+            .count();
     });
 
     count
 }
 
-fn solve_2(matrix: &Vec<Vec<char>>) -> i32 {
+fn solve_2(matrix: &Vec<Vec<char>>) -> usize {
     let mut count = 0;
     let size = 3;
 
