@@ -46,7 +46,7 @@ fn solve_1(matrix: &Vec<Vec<char>>) -> i32 {
                     vertical_word.push(window[i][ry]);
                 }
                 let word = vertical_word.into_iter().collect::<String>();
-                if [XMAS, SAMX].contains(&word.as_str()) {
+                if word == XMAS || word == SAMX {
                     count += 1;
                 }
                 visited_vertical.push((y, x + ry));
