@@ -17,7 +17,7 @@ fn main() {
     println!("Part II: {:?}", part_2); // 1900
 }
 
-fn parse(input: String, mut matrix: &mut Vec<Vec<char>>) {
+fn parse(input: String, matrix: &mut Vec<Vec<char>>) {
     input.lines().for_each(|line| {
         let row: Vec<char> = line.chars().collect();
         matrix.push(row);
@@ -62,8 +62,8 @@ fn solve_1(matrix: &Vec<Vec<char>>) -> i32 {
             diag_2.push(window[i][size - i - 1]);
         }
 
-        let diag_word_1 = String::from_iter(diag_1.iter().cloned());
-        let diag_word_2 = String::from_iter(diag_2.iter().cloned());
+        let diag_word_1 = String::from_iter(diag_1.iter());
+        let diag_word_2 = String::from_iter(diag_2.iter());
 
         if diag_word_1 == XMAS || diag_word_1 == SAMX {
             count += 1;
