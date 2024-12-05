@@ -95,31 +95,6 @@ fn create_index(rules: &[(usize, usize)]) -> HashMap<usize, Vec<(usize, Order)>>
     index
 }
 
-fn get_updates_<'a>(
-    index: &'a HashMap<usize, Vec<(usize, Order)>>,
-    updates: &'a [Vec<usize>],
-    is_valid: bool,
-) -> Vec<&'a Vec<usize>> {
-    updates
-        .iter()
-        .filter(|&update| {
-            let result = update.iter().enumerate().all(|(current_index, &page)| {
-                index.get(&page).is_some_and(|orders| {
-                    update[current_index + 1..].iter().all(|rest_page| {
-                        orders
-                            .iter()
-                            .find(|&(other_page, order)| {
-                                other_page == rest_page && *order == Order::Right
-                            })
-                            .is_some()
-                    })
-                })
-            });
-            is_valid == result
-        })
-        .collect()
-}
-
 fn get_updates<'a>(
     index: &'a HashMap<usize, Vec<(usize, Order)>>,
     updates: &'a [Vec<usize>],
