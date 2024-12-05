@@ -108,7 +108,7 @@ fn get_updates<'a>(
                     update[current_index + 1..].iter().all(|rest_page| {
                         orders
                             .iter()
-                            .find(|&(other_page, found_order)| other_page == rest_page && *found_order == Order::Right)
+                            .find(|&(other_page, order)| other_page == rest_page && *order == Order::Right)
                             .is_some()
                     })
                 })
