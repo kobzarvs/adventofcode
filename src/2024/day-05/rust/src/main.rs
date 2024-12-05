@@ -95,7 +95,7 @@ fn create_index(rules: &[(usize, usize)]) -> HashMap<usize, Vec<(usize, Order)>>
     index
 }
 
-fn get_updates<'a>(
+fn get_updates_<'a>(
     index: &'a HashMap<usize, Vec<(usize, Order)>>,
     updates: &'a [Vec<usize>],
     is_valid: bool,
@@ -108,9 +108,34 @@ fn get_updates<'a>(
                     update[current_index + 1..].iter().all(|rest_page| {
                         orders
                             .iter()
-                            .find(|&(other_page, order)| other_page == rest_page && *order == Order::Right)
+                            .find(|&(other_page, order)| {
+                                other_page == rest_page && *order == Order::Right
+                            })
                             .is_some()
                     })
+                })
+            });
+            is_valid == result
+        })
+        .collect()
+}
+
+fn get_updates<'a>(
+    index: &'a HashMap<usize, Vec<(usize, Order)>>,
+    updates: &'a [Vec<usize>],
+    is_valid: bool,
+) -> Vec<&'a Vec<usize>> {
+    updates
+        .iter()
+        .filter(|&update| {
+            let result = update.windows(2).all(|pages| {
+                index.get(&pages[0]).is_some_and(|orders| {
+                    orders
+                        .iter()
+                        .find(|(other_page, order)| {
+                            *other_page == pages[1] && *order == Order::Right
+                        })
+                        .is_some()
                 })
             });
             is_valid == result
