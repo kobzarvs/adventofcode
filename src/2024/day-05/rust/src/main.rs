@@ -50,7 +50,7 @@ fn solve_1(index: &HashMap<usize, Vec<(usize, Order)>>, updates: &Vec<Vec<usize>
 fn solve_2(index: &HashMap<usize, Vec<(usize, Order)>>, updates: &Vec<Vec<usize>>) -> usize {
     let mut invalid_updates = get_updates(index, updates, false);
 
-    let count = invalid_updates.iter_mut().fold(0, |acc, invalid_update| {
+    let sum = invalid_updates.iter_mut().fold(0, |acc, invalid_update| {
         let mut invalid_update = invalid_update.clone();
 
         invalid_update.sort_by(|&a, &b| {
@@ -62,10 +62,10 @@ fn solve_2(index: &HashMap<usize, Vec<(usize, Order)>>, updates: &Vec<Vec<usize>
             }
         });
 
-        acc + invalid_update.get(invalid_update.len() / 2).unwrap_or(&0)
+        acc + invalid_update[invalid_update.len() / 2]
     });
 
-    count
+    sum
 }
 
 #[derive(Debug, Copy, Clone)]
