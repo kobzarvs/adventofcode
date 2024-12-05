@@ -108,17 +108,19 @@ fn get_updates<'a>(
     updates
         .iter()
         .filter(|&update| {
-            let result = update.windows(2).all(|pages| {
-                index.get(&pages[0]).is_some_and(|orders| {
+            let matches_order = update.windows(2).all(|pair_pages| {
+                let &[first, second] = pair_pages else {
+                    return false;
+                };
+
+                index.get(&first).map_or(false, |orders| {
                     orders
                         .iter()
-                        .find(|(other_page, order)| {
-                            *other_page == pages[1] && *order == Order::Right
-                        })
-                        .is_some()
+                        .any(|(other_page, order)| *other_page == second && *order == Order::Right)
                 })
             });
-            is_valid == result
+
+            is_valid == matches_order
         })
         .collect()
 }
