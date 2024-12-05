@@ -1,5 +1,3 @@
-#![recursion_limit = "1000"]
-
 use day_05::read_file;
 use regex::Regex;
 use std::cmp::PartialEq;
