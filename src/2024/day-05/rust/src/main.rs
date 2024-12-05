@@ -50,24 +50,25 @@ fn solve_1(index: &HashMap<usize, Vec<(usize, Order)>>, updates: &Vec<Vec<usize>
 fn solve_2(index: &HashMap<usize, Vec<(usize, Order)>>, updates: &Vec<Vec<usize>>) -> usize {
     let mut invalid_updates = get_updates(index, updates, false);
 
-    let sum = invalid_updates.iter_mut().fold(0, |acc, invalid_update| {
-        let mut invalid_update = invalid_update.clone();
+    let sum = invalid_updates
+        .iter_mut()
+        .map(|invalid_update| {
+            let mut invalid_update = invalid_update.clone();
 
-        invalid_update.sort_by(|&a, &b| {
-            index.get(&a).and_then(|order_for_a| {
-                order_for_a
-                    .iter()
-                    .find(|(num, order)| *num == b && *order == Order::Right)
-                    .map_or_else(|| {
-                        Some(Ordering::Greater)
-                    }, |_| {
-                        Some(Ordering::Less)
+            invalid_update.sort_by(|&a, &b| {
+                index
+                    .get(&a)
+                    .and_then(|order_for_a| {
+                        order_for_a
+                            .iter()
+                            .find(|(num, order)| *num == b && *order == Order::Right)
                     })
-            }).unwrap()
-        });
+                    .map_or(Ordering::Greater, |_| Ordering::Less)
+            });
 
-        acc + invalid_update[invalid_update.len() / 2]
-    });
+            invalid_update[invalid_update.len() / 2]
+        })
+        .sum();
 
     sum
 }
