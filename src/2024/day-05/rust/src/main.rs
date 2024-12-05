@@ -58,12 +58,16 @@ fn solve_2(index: &HashMap<usize, Vec<(usize, Order)>>, updates: &Vec<Vec<usize>
             invalid_update.sort_by(|&a, &b| {
                 index
                     .get(&a)
-                    .and_then(|order_for_a| {
-                        order_for_a
+                    .map_or(Ordering::Equal, |order_for_a| {
+                        if order_for_a
                             .iter()
-                            .find(|(num, order)| *num == b && *order == Order::Right)
+                            .any(|(num, order)| *num == b && *order == Order::Right)
+                        {
+                            Ordering::Less
+                        } else {
+                            Ordering::Greater
+                        }
                     })
-                    .map_or(Ordering::Greater, |_| Ordering::Less)
             });
 
             invalid_update[invalid_update.len() / 2]
