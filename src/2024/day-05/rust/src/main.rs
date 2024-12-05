@@ -1,6 +1,6 @@
 use day_05::read_file;
 use regex::Regex;
-use std::cmp::PartialEq;
+use std::cmp::{Ordering, PartialEq};
 use std::collections::HashMap;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -54,12 +54,16 @@ fn solve_2(index: &HashMap<usize, Vec<(usize, Order)>>, updates: &Vec<Vec<usize>
         let mut invalid_update = invalid_update.clone();
 
         invalid_update.sort_by(|&a, &b| {
-            let order_for_a = index.get(&a).unwrap();
-            match order_for_a.iter().find(|(num, _)| *num == b) {
-                Some((_, Order::Left)) => std::cmp::Ordering::Greater,
-                Some((_, Order::Right)) => std::cmp::Ordering::Less,
-                _ => std::cmp::Ordering::Equal,
-            }
+            index.get(&a).and_then(|order_for_a| {
+                order_for_a
+                    .iter()
+                    .find(|(num, order)| *num == b && *order == Order::Right)
+                    .map_or_else(|| {
+                        Some(Ordering::Greater)
+                    }, |_| {
+                        Some(Ordering::Less)
+                    })
+            }).unwrap()
         });
 
         acc + invalid_update[invalid_update.len() / 2]
