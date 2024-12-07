@@ -52,11 +52,11 @@ fn solve_1(expressions: &Vec<(i64, Vec<i64>)>) -> i64 {
             for counter in 0..2_i64.pow(numbers.len() as u32 - 1) {
                 let mut result = numbers[0];
                 for i in 1..numbers.len() {
-                    let is_bit = counter & 1 << (i - 1) != 0;
-                    if is_bit {
-                        result *= numbers[i];
-                    } else {
-                        result += numbers[i];
+                    let bits = (counter & 1 << (i - 1)) >> (i - 1);
+                    match bits {
+                        0b00 => result *= numbers[i],
+                        0b01 => result += numbers[i],
+                        _ => continue,
                     }
                 }
                 if result == *expected {
@@ -73,10 +73,13 @@ fn solve_2(expressions: &Vec<(i64, Vec<i64>)>) -> i64 {
         .iter()
         .map(|(expected, numbers)| {
             for counter in 0..3_i64.pow(numbers.len() as u32 - 1) {
+                if counter % 3 > 2 {
+                    continue;
+                }
                 let mut result = numbers[0];
                 for i in 1..numbers.len() {
-                    let c = counter % 3;
-                    match c {
+                    let bits = (counter & 0b11 << (i - 1)*2) >> (i - 1)*2;
+                    match bits {
                         0b00 => result *= numbers[i],
                         0b01 => result += numbers[i],
                         0b10 => result = format!("{}{}", result, numbers[i]).parse::<i64>().unwrap(),
