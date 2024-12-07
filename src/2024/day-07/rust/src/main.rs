@@ -10,7 +10,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let expressions = parse(&input)?;
 
     let ops: Vec<fn(u64, u64) -> u64> = vec![
-        |a, b| format!("{}{}", a, b).parse::<u64>().unwrap(),
+        |a, b| a * 10_u64.pow(b.ilog10() + 1) + b,
         |a, b| a + b,
         |a, b| a * b,
     ];
