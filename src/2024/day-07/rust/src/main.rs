@@ -3,11 +3,12 @@ use itertools::{Itertools, MultiProduct};
 use rayon::prelude::*;
 use regex::Regex;
 use std::ops::{Add, Mul};
+use code_timing_macros::time_snippet;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let input = read_file();
 
-    let expressions = parse(&input)?;
+    let expressions = time_snippet!(parse(&input)?);
 
     let ops: Vec<fn(u64, u64) -> u64> = vec![
         |a, b| a * 10_u64.pow(b.ilog10() + 1) + b,
@@ -15,10 +16,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         |a, b| a * b,
     ];
 
-    let part_1 = solve(&expressions, &ops[1..]);
+    let part_1 = time_snippet!(solve(&expressions, &ops[1..]));
     println!("Part I: {:?}", part_1);
 
-    let part_2 = solve(&expressions, &ops);
+    let part_2 = time_snippet!(solve(&expressions, &ops));
     println!("Part II: {:?}", part_2);
 
     Ok(())
@@ -29,7 +30,7 @@ fn solve(expressions: &[(u64, Vec<u64>)], ops: &[fn(u64, u64) -> u64]) -> u64 {
         .par_iter() // Используем параллельный итератор
         .filter(|(expected, numbers)| {
             numbers[1..]
-                .iter()
+                .into_iter()
                 .map(|_| ops)
                 .multi_cartesian_product()
                 .into_iter()
