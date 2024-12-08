@@ -3,7 +3,6 @@ use itertools::Itertools;
 use rayon::prelude::*;
 use std::collections::{HashMap, HashSet};
 
-
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let input = read_file();
 
@@ -18,7 +17,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-fn solve_1(radar_map: &HashMap<String, HashSet<Pos>>, size: &Size) -> u64 {
+fn solve_1(radar_map: &HashMap<String, HashSet<Pos>>, size: &Size) -> usize {
     let check_point = |pos: &Pos| -> bool {
         pos.x > 0 && pos.x <= size.width && pos.y > 0 && pos.y <= size.height
     };
@@ -26,28 +25,29 @@ fn solve_1(radar_map: &HashMap<String, HashSet<Pos>>, size: &Size) -> u64 {
     let tmp = radar_map
         .par_iter()
         .flat_map(|(_name, radars)| {
-            let projections = radars
+            radars
                 .into_iter()
                 .combinations(2)
                 .flat_map(|pair| {
                     let v = *pair[1] - *pair[0];
                     [*pair[0] - v, *pair[1] + v]
                 })
-                .filter(|pos| check_point(pos))
-                .collect::<Vec<_>>();
-            projections
+                .filter(check_point)
+                .collect::<Vec<_>>()
         })
         .collect::<Vec<_>>();
 
-    tmp.into_iter().unique().collect::<Vec<_>>().len() as u64
+    tmp.iter().unique().count()
 }
 
-fn solve_2(radar_map: &HashMap<String, HashSet<Pos>>, size: &Size) -> u64 {
-    let check_point = |pos: &Pos| -> bool {
-        pos.x > 0 && pos.x <= size.width && pos.y > 0 && pos.y <= size.height
+fn solve_2(radar_map: &HashMap<String, HashSet<Pos>>, size: &Size) -> usize {
+    let check_point = |pos: &Pos, points: &mut Vec<Pos>, callback: fn(&mut Vec<Pos>, Pos)| -> bool {
+        let result = pos.x > 0 && pos.x <= size.width && pos.y > 0 && pos.y <= size.height;
+        if result { callback(points, *pos); }
+        result
     };
 
-    let tmp = radar_map
+    radar_map
         .par_iter()
         .flat_map(|(_name, radars)| {
             radars
@@ -63,42 +63,31 @@ fn solve_2(radar_map: &HashMap<String, HashSet<Pos>>, size: &Size) -> u64 {
                     loop {
                         p1 = p1 + v;
                         p2 = p2 - v;
-                        let c1 = check_point(&p1);
-                        let c2 = check_point(&p2);
-                        if c1 {
-                            projections.push(p1);
-                        }
-                        if c2 {
-                            projections.push(p2);
-                        }
-                        // если оба луча вышли за пределы поля то выходим из цикла
+                        let c1 = check_point(&p1, &mut projections, |pts, p| pts.push(p));
+                        let c2 = check_point(&p2, &mut projections, |pts, p| pts.push(p));
+                        // если оба луча вышли за пределы поля, то выходим из цикла
                         if !c1 && !c2 {
-                            break;
+                            break projections;
                         }
                     }
-                    projections
                 })
                 .collect::<Vec<_>>()
         })
         .collect::<Vec<_>>()
         .into_iter()
         .unique()
-        .collect::<Vec<_>>();
-
-    tmp.len() as u64
+        .count()
 }
 
 fn parse(input: &str) -> (HashMap<String, HashSet<Pos>>, Size) {
     let mut radar_map: HashMap<String, HashSet<Pos>> = HashMap::new();
-    let mut size = Size {
-        width: 0,
-        height: 0,
+    let size = Size {
+        width: input.lines().next().unwrap().len() as i32,
+        height: input.lines().count() as i32,
     };
 
     for (y, line) in input.lines().enumerate() {
         if !line.is_empty() {
-            size.width = line.len() as i32;
-
             line.chars().enumerate().for_each(|(x, c)| {
                 let pos: Pos = Pos {
                     x: x as i32 + 1,
@@ -116,8 +105,6 @@ fn parse(input: &str) -> (HashMap<String, HashSet<Pos>>, Size) {
             });
         }
     }
-
-    size.height = input.lines().count() as i32;
 
     (radar_map, size)
 }
