@@ -2,16 +2,17 @@ use day_08::{read_file, Pos, Size};
 use itertools::Itertools;
 use rayon::prelude::*;
 use std::collections::{HashMap, HashSet};
+use code_timing_macros::time_snippet;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let input = read_file();
 
     let (radars, size) = parse(&input);
 
-    let part_1 = solve_1(&radars, &size);
+    let part_1 = time_snippet!(solve_1(&radars, &size));
     println!("Part I: {:?}", part_1);
 
-    let part_2 = solve_2(&radars, &size);
+    let part_2 = time_snippet!(solve_2(&radars, &size));
     println!("Part II: {:?}", part_2);
 
     Ok(())
