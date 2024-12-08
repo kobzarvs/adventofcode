@@ -56,13 +56,13 @@ fn solve_2(radar_map: &HashMap<String, HashSet<Pos>>, size: &Size) -> usize {
                 .flat_map(|pair| {
                     let mut p1 = *pair[0];
                     let mut p2 = *pair[1];
-                    let v = p2 - p1;
+                    let distance_vector = p2 - p1;
                     let mut projections = vec![p1, p2];
 
                     // строим проекции радаров до упора в обе стороны
                     loop {
-                        p1 = p1 + v;
-                        p2 = p2 - v;
+                        p1 = p1 + distance_vector;
+                        p2 = p2 - distance_vector;
                         let c1 = check_point(&p1, &mut projections, |pts, p| pts.push(p));
                         let c2 = check_point(&p2, &mut projections, |pts, p| pts.push(p));
                         // если оба луча вышли за пределы поля, то выходим из цикла
