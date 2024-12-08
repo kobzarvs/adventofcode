@@ -1,107 +1,84 @@
-use std::cmp::max;
-use std::collections::{HashMap, HashSet};
-use day_08::read_file;
-use itertools::{Itertools, MultiProduct};
+use day_08::{read_file, Pos, Size};
+use itertools::Itertools;
 use rayon::prelude::*;
-use regex::Regex;
-use std::ops::{Add, Mul};
+use std::collections::{HashMap, HashSet};
 
-#[derive(Debug, Clone)]
-#[derive(Eq, Hash, PartialEq)]
-enum Item {
-    Antenna(String),
-    AntiNode,
-    Empty,
-}
-
-type Pos = (i32, i32);
-type Matrix = HashMap<Pos, Item>;
-type Antenna = HashSet<(crate::Item, Pos)>;
-
-#[derive(Debug)]
-struct Size {
-    width: i32,
-    height: i32,
-}
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let input = read_file();
 
-    let (matrix, antenna, size) = parse(&input);
+    let (radars, size) = parse(&input);
 
-    let part_1 = solve_1(&matrix, &antenna, &size);
+    let part_1 = solve_1(&radars, &size);
     println!("Part I: {:?}", part_1);
 
-    let part_2 = solve_2(&matrix, &antenna, &size);
+    let part_2 = solve_2(&radars, &size);
     println!("Part II: {:?}", part_2);
 
     Ok(())
 }
 
-fn solve_1(matrix: &Matrix, antenna_map: &HashMap<String, HashSet<(Item, Pos)>>, size: &Size) -> u64 {
-    let tmp = antenna_map
+fn solve_1(radar_map: &HashMap<String, HashSet<Pos>>, size: &Size) -> u64 {
+    let check_point = |pos: &Pos| -> bool {
+        pos.x > 0 && pos.x <= size.width && pos.y > 0 && pos.y <= size.height
+    };
+
+    let tmp = radar_map
         .par_iter()
-        .flat_map(|(name, radars)| {
-            let antiradars = radars
+        .flat_map(|(_name, radars)| {
+            let projections = radars
                 .into_iter()
                 .combinations(2)
                 .flat_map(|pair| {
-                    let vx = pair[1].1.0 - pair[0].1.0;
-                    let vy = pair[1].1.1 - pair[0].1.1;
-                    [(pair[0].1.0 - vx, pair[0].1.1 - vy), (pair[1].1.0 + vx, pair[1].1.1 + vy)]
+                    let v = *pair[1] - *pair[0];
+                    [*pair[0] - v, *pair[1] + v]
                 })
-                .filter(|pos| pos.0 > 0 && pos.0 <= size.width && pos.1 > 0 && pos.1 <= size.height)
+                .filter(|pos| check_point(pos))
                 .collect::<Vec<_>>();
-            antiradars
+            projections
         })
-        .collect::<Vec<_>>()
-        .into_iter()
-        .unique()
         .collect::<Vec<_>>();
 
-    tmp.len() as u64
+    tmp.into_iter().unique().collect::<Vec<_>>().len() as u64
 }
 
-fn solve_2(matrix: &Matrix, antenna_map: &HashMap<String, HashSet<(Item, Pos)>>, size: &Size) -> u64 {
-    let check_point = |pos: Pos| -> bool {
-        pos.0 > 0 && pos.0 <= size.width && pos.1 > 0 && pos.1 <= size.height
+fn solve_2(radar_map: &HashMap<String, HashSet<Pos>>, size: &Size) -> u64 {
+    let check_point = |pos: &Pos| -> bool {
+        pos.x > 0 && pos.x <= size.width && pos.y > 0 && pos.y <= size.height
     };
 
-    let tmp = antenna_map
+    let tmp = radar_map
         .par_iter()
-        .flat_map(|(name, radars)| {
-            let antiradars = radars
+        .flat_map(|(_name, radars)| {
+            radars
                 .iter()
                 .combinations(2)
                 .flat_map(|pair| {
-                    let (p1_x, p1_y) = (pair[0].1.0, pair[0].1.1);
-                    let (p2_x, p2_y) = (pair[1].1.0, pair[1].1.1);
-                    let vx = p2_x - p1_x;
-                    let vy = p2_y - p1_y;
-                    let mut p1 = (p1_x, p1_y);
-                    let mut p2 = (p2_x, p2_y);
-                    let mut antinodes = vec![p1, p2];
-                    let mut steps = 0;
+                    let mut p1 = *pair[0];
+                    let mut p2 = *pair[1];
+                    let v = p2 - p1;
+                    let mut projections = vec![p1, p2];
 
+                    // строим проекции радаров до упора в обе стороны
                     loop {
-                        p1 = (p1.0 - vx, p1.1 - vy);
-                        p2 = (p2.0 + vx, p2.1 + vy);
-                        let c1 = check_point(p1);
-                        let c2 = check_point(p2);
+                        p1 = p1 + v;
+                        p2 = p2 - v;
+                        let c1 = check_point(&p1);
+                        let c2 = check_point(&p2);
                         if c1 {
-                            antinodes.push(p1);
+                            projections.push(p1);
                         }
                         if c2 {
-                            antinodes.push(p2);
+                            projections.push(p2);
                         }
+                        // если оба луча вышли за пределы поля то выходим из цикла
                         if !c1 && !c2 {
                             break;
                         }
                     }
-                    antinodes
+                    projections
                 })
-                .collect::<Vec<_>>();
-            antiradars
+                .collect::<Vec<_>>()
         })
         .collect::<Vec<_>>()
         .into_iter()
@@ -111,37 +88,36 @@ fn solve_2(matrix: &Matrix, antenna_map: &HashMap<String, HashSet<(Item, Pos)>>,
     tmp.len() as u64
 }
 
-
-fn parse(input: &str) -> (Matrix, HashMap<String, HashSet<(crate::Item, Pos)>>, Size) {
-    let mut matrix: Matrix = HashMap::new();
-    let mut antenna_map: HashMap<String, HashSet<(Item, Pos)>> = HashMap::new();
-    let mut size = Size { width: 0, height: 0 };
+fn parse(input: &str) -> (HashMap<String, HashSet<Pos>>, Size) {
+    let mut radar_map: HashMap<String, HashSet<Pos>> = HashMap::new();
+    let mut size = Size {
+        width: 0,
+        height: 0,
+    };
 
     for (y, line) in input.lines().enumerate() {
         if !line.is_empty() {
             size.width = line.len() as i32;
 
-            line.chars().enumerate().for_each(|(x, mut c)| {
-                let pos: Pos = (x as i32 + 1, y as i32 + 1);
-                if c == '.' {
-                    matrix.insert(pos, Item::Empty);
-                } else {
-                    let antenna_sym = String::from(c);
-                    let antenna_type = Item::Antenna(antenna_sym.clone());
-                    let antenna: (Item, Pos) = (antenna_type.clone(), pos);
-                    matrix.insert(pos, antenna_type.clone());
-                    antenna_map.entry(antenna_sym)
-                        .and_modify(|antenna_set| {
-                            antenna_set.insert(antenna.clone());
+            line.chars().enumerate().for_each(|(x, c)| {
+                let pos: Pos = Pos {
+                    x: x as i32 + 1,
+                    y: y as i32 + 1,
+                };
+                if c != '.' {
+                    let radar_sym = String::from(c);
+                    radar_map
+                        .entry(radar_sym)
+                        .and_modify(|radar_set| {
+                            radar_set.insert(pos);
                         })
-                        .or_insert(HashSet::from([antenna.clone()]));
+                        .or_insert(HashSet::from([pos]));
                 }
             });
-
         }
     }
 
     size.height = input.lines().count() as i32;
 
-    (matrix, antenna_map, size)
+    (radar_map, size)
 }
