@@ -3,3 +3,9 @@
 *.iml
 target
 .stack-work
+.env
+*.dSYM
+.DS_Store
+main
+input*.txt
+.envrc

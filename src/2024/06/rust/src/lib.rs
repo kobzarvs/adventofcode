@@ -1,5 +1,6 @@
 use std::{env, fs};
 use std::path::PathBuf;
+use std::ops::{Add, Sub};
 
 pub fn transpose(matrix: &Vec<Vec<char>>) -> Vec<Vec<char>> {
     let rows = matrix.len();
@@ -35,4 +36,38 @@ pub fn read_file() -> String {
     println!("Input file: {:?}", filename);
     let input = fs::read_to_string(filename).expect("Unable to read file");
     input
+}
+
+#[derive(Hash, Debug, Clone, Copy, Eq, PartialEq)]
+pub struct Pos {
+    pub x: i32,
+    pub y: i32,
+}
+
+impl Sub for Pos {
+    type Output = Pos;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        Pos {
+            x: self.x - rhs.x,
+            y: self.y - rhs.y,
+        }
+    }
+}
+
+impl Add for Pos {
+    type Output = Pos;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        Pos {
+            x: self.x + rhs.x,
+            y: self.y + rhs.y,
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct Size {
+    pub width: i32,
+    pub height: i32,
 }
