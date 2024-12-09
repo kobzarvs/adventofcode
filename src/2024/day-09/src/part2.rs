@@ -1,10 +1,4 @@
-// use std::cell::RefCell;
-// use std::iter::zip;
-// use std::rc::Rc;
 use itertools::{Itertools};
-// use rayon::prelude::IntoParallelRefIterator;
-// use rayon::prelude::*;
-// use tracing::{trace};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 struct File {
@@ -17,7 +11,6 @@ struct File {
 struct Hole {
     start: usize,
     size: usize,
-    // files: Vec<File>,
 }
 
 fn parse(input: &str) -> (Vec<File>, Vec<Hole>) {
@@ -57,11 +50,12 @@ pub fn process(input: &str) -> miette::Result<String> {
         for hole in holes.iter_mut() {
             // если дырка меньше файла - пропускаем
             if hole.size < file.size || file.start <= hole.start { continue; }
-            // меняем местами дырку с файлом
-            (hole.start, file.start) = (hole.start + file.size, hole.start);
+            // перемешаем файл на место дырки
+            file.start = hole.start;
+            // смещаем дырку вправо на размер файла
+            hole.start = hole.start + file.size;
             // корректируем размер дырки
             hole.size -= file.size;
-            // hole.files.push(*file);
         }
         for i in 0..file.size {
             result += file.id * (file.start + i);
