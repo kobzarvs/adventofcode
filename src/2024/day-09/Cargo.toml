@@ -22,3 +22,10 @@ test-log.workspace = true
 name = "day-09-bench"
 path = "benches/benchmarks.rs"
 harness = false
+
+[profile.release]
+opt-level = "s"      # Максимальный уровень оптимизации (по умолчанию для --release)
+lto = "thin"         # Включить линкерные оптимизации (может улучшить производительность)
+codegen-units = 1    # Снизить количество параллельных единиц кода для лучшей оптимизации
+debug = false        # Убрать символы отладки
+panic = "abort"      # Использовать "abort" вместо unwind для уменьшения размера кода
