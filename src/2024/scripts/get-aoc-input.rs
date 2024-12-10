@@ -65,19 +65,17 @@ fn main() -> Result<(), reqwest::Error> {
         .send()?
         .text()?;
 
-    for filename in ["input1.txt", "input2.txt"] {
-        let file_path = args
-            .current_working_directory
-            .join(&args.day)
-            .join(filename);
-        let mut file = File::create(&file_path)
-            .expect("should be able to create a file");
+    let file_path = args
+        .current_working_directory
+        .join(&args.day)
+        .join("data.txt");
+    let mut file = File::create(&file_path)
+        .expect("should be able to create a file");
 
-        file.write_all(input_data.as_bytes()).expect(
-            "should be able to write to input file",
-        );
-        println!("wrote {}", file_path.display());
-    }
+    file.write_all(input_data.as_bytes()).expect(
+        "should be able to write to input file",
+    );
+    println!("wrote {}", file_path.display());
 
     Ok(())
 }

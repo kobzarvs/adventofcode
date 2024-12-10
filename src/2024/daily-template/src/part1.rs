@@ -1,17 +1,23 @@
-#[tracing::instrument]
-pub fn process(_input: &str) -> miette::Result<String> {
-    todo!("day 01 - part 1");
+pub fn run() {
+    todo!("run parse & solve");
+}
+
+fn solve() -> i32 {
+    todo!("add your code");
+    42
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use crate::{parse, part1};
 
     #[test]
-    fn test_process() -> miette::Result<()> {
-        todo!("haven't built test yet");
-        let input = "";
-        assert_eq!("", process(input)?);
-        Ok(())
+    fn solve() {
+        let input = include_str!("../test.txt");
+
+        todo!("modify this code");
+
+        let data = parse(input);
+        assert_eq!(42, part1::solve(&data));
     }
 }
