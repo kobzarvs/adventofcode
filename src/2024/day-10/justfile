@@ -1,7 +1,7 @@
 set dotenv-load
 
 dev:
-    @cargo watch --debug --why -q -s "just fix" -s "just test" -c
+    @cargo watch --debug --why -q -s "just lint" -s "just test" -c
 
 lint:
     @cargo clippy --all-targets

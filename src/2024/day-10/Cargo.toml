@@ -17,6 +17,9 @@ name = "benchmark"
 path = "benches/benchmarks.rs"
 harness = false
 
+[clippy]
+warn = ["all"]
+
 [profile.release]
 opt-level = "s"      # Максимальный уровень оптимизации (по умолчанию для --release)
 lto = "thin"         # Включить линкерные оптимизации (может улучшить производительность)
