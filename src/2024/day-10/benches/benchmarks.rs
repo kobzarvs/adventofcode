@@ -8,7 +8,7 @@ fn main() {
 #[divan::bench]
 fn part1() {
     let input = include_str!("../data.txt");
-    let (map, start_points) = day_10::parser::parse(&input);
+    let (map, start_points) = parse(input);
 
     part1::solve(&map, &start_points);
 }
@@ -16,7 +16,7 @@ fn part1() {
 #[divan::bench]
 fn part2() {
     let input = include_str!("../data.txt");
-    let (map, start_points) = day_10::parser::parse(&input);
+    let (map, start_points) = parse(input);
 
     part2::solve(&map, &start_points);
 }

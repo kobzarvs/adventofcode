@@ -13,7 +13,7 @@ code-timing-macros = { version = "0.0.5", features = ["release"] }
 divan = "0.1.7"
 
 [[bench]]
-name = "day-10-bench"
+name = "benchmark"
 path = "benches/benchmarks.rs"
 harness = false
 

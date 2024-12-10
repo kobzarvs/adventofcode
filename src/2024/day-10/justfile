@@ -1,0 +1,25 @@
+set dotenv-load
+
+dev:
+    @cargo watch --debug --why -q -s "just fix" -s "just test" -c
+
+lint:
+    @cargo clippy --all-targets
+
+fix:
+    @cargo clippy --all-targets --fix --allow-dirty
+
+bench:
+    @cargo bench --bench benchmark -q
+
+test:
+    @cargo nextest run
+
+run:
+    @time cargo run -q
+
+release:
+    @time cargo run --release -q data.txt
+
+build:
+    @cargo build --release
