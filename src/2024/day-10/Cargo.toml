@@ -3,8 +3,6 @@ name = "day-10"
 version = "0.1.0"
 edition = "2021"
 
-[workspace]
-
 [dependencies]
 regex = "1.11.1"
 itertools = "0.13.0"

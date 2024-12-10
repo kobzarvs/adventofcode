@@ -1,43 +1,47 @@
 use crate::{Pos, Topo, DIRECTIONS};
-use std::sync::{Arc, Mutex};
-use rayon::prelude::*;
+use std::collections::HashSet;
 
-fn try_step(from: &Pos, map: &Topo, result: &Arc<Mutex<i32>>) {
-    // if end point
+
+fn try_step(from: &Pos, map: &Topo, visited: &mut HashSet<Pos>, paths: &mut i32) {
     if *map.get(from).unwrap() == 9 {
-        *result.lock().unwrap() += 1;
+        *paths += 1;
         return;
     }
 
-    DIRECTIONS
-        .into_par_iter()
-        .filter(|dir| {
-            map.get(&(*from + *dir))
-                .is_some_and(|high| *high - *map.get(from).unwrap() == 1)
-        })
-        .for_each(|dir| {
-            try_step(&(*from + dir), map, result);
-        });
+    visited.insert(*from);
+
+    for dir in DIRECTIONS.iter() {
+        let next_pos = *from + *dir;
+
+        if map
+            .get(&next_pos)
+            .is_some_and(|high| *high - *map.get(from).unwrap() == 1)
+            && !visited.contains(&next_pos)
+        {
+            try_step(&next_pos, map, visited, paths);
+        }
+    }
+
+    visited.remove(from);
 }
 
 pub fn solve(src_map: &Topo, start_points: &[Pos]) -> i32 {
-    let result = Arc::new(Mutex::new(0));
+    let mut total_paths = 0;
 
-    start_points
-        .par_iter()
-        .for_each(|start| {
-            try_step(start, src_map, &result);
-        });
+    for start in start_points {
+        let mut visited = HashSet::new();
+        let mut paths = 0;
+        try_step(start, src_map, &mut visited, &mut paths);
+        total_paths += paths;
+    }
 
-    let result = *result.lock().unwrap();
-    result
+    total_paths
 }
-
 
 #[cfg(test)]
 mod tests {
-    use std::sync::{Arc, Mutex};
-    use crate::{parse, part2};
+    use crate::{parse, part2, Pos};
+    use std::collections::{HashSet, HashMap};
 
     #[test]
     fn solve() {
@@ -51,10 +55,34 @@ mod tests {
     fn try_step() {
         let input = include_str!("../test.txt");
         let (map, start_points) = parse(input);
-        let result = Arc::new(Mutex::new(0));
+        let mut visited = std::collections::HashSet::new();
+        let mut paths = 0;
 
-        part2::try_step(&start_points[0], &map, &result);
-        
-        assert_eq!(20, *result.lock().unwrap());
+        part2::try_step(&start_points[0], &map, &mut visited, &mut paths);
+
+        assert_eq!(20, paths);
+    }
+
+    #[test]
+    fn test_try_step() {
+        let mut map = HashMap::new();
+        map.insert(Pos{x:0, y:0}, 0);
+        map.insert(Pos{x:0, y:1}, 1);
+        map.insert(Pos{x:0, y:2}, 2);
+        map.insert(Pos{x:0, y:3}, 3);
+        map.insert(Pos{x:0, y:4}, 4);
+        map.insert(Pos{x:0, y:5}, 5);
+        map.insert(Pos{x:0, y:6}, 6);
+        map.insert(Pos{x:0, y:7}, 7);
+        map.insert(Pos{x:0, y:8}, 8);
+        map.insert(Pos{x:0, y:9}, 9);
+
+        let start = Pos{x:0, y:0};
+        let mut visited = HashSet::new();
+        let mut paths = 0;
+
+        part2::try_step(&start, &map, &mut visited, &mut paths);
+
+        assert_eq!(paths, 1);
     }
 }

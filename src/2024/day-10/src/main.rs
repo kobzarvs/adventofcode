@@ -6,8 +6,8 @@ fn main() {
     let (map, start_points) = parse(&input);
 
     let result = part1::solve(&map, &start_points);
-    println!("part I: {}", result); // 36
+    println!("part I: {}", result); // 36 - 638
 
     let result = part2::solve(&map, &start_points);
-    println!("part II: {}", result); // 81
+    println!("part II: {}", result); // 81 - 1289
 }
