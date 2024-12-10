@@ -5,7 +5,7 @@ use std::ops::{Add, Sub};
 pub mod part1;
 pub mod part2;
 
-pub fn transpose(matrix: &Vec<Vec<char>>) -> Vec<Vec<char>> {
+pub fn transpose(matrix: &[Vec<char>]) -> Vec<Vec<char>> {
     let rows = matrix.len();
     let cols = matrix[0].len();
 
@@ -14,7 +14,7 @@ pub fn transpose(matrix: &Vec<Vec<char>>) -> Vec<Vec<char>> {
         .collect()
 }
 
-pub fn process_matrix<F>(matrix: &Vec<Vec<char>>, size: usize, mut processor: F)
+pub fn process_matrix<F>(matrix: &[Vec<char>], size: usize, mut processor: F)
 where
     F: FnMut(&Vec<Vec<char>>, usize, usize),
 {
@@ -34,11 +34,10 @@ pub fn read_file() -> String {
     let args: Vec<String> = env::args().collect();
     let filename = args
         .get(1)
-        .map(|s| PathBuf::from(s))
+        .map(PathBuf::from)
         .unwrap_or_else(|| PathBuf::from("test.txt"));
     println!("Input file: {:?}", filename);
-    let input = fs::read_to_string(filename).expect("Unable to read file");
-    input
+    fs::read_to_string(filename).expect("Unable to read file")
 }
 
 #[derive(Hash, Debug, Clone, Copy, Eq, PartialEq)]
