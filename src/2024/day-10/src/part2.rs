@@ -3,8 +3,10 @@ use std::sync::{Arc, Mutex};
 use rayon::prelude::*;
 
 fn try_step(from: &Pos, map: &Topo, result: &Arc<Mutex<i32>>) {
+    // if end point
     if *map.get(&*from).unwrap() == 9 {
         *result.lock().unwrap() += 1;
+        return;
     }
 
     DIRECTIONS
