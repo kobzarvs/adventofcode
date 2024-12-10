@@ -53,7 +53,7 @@ mod tests {
         let (map, start_points) = parse(input);
         let result = Arc::new(Mutex::new(0));
 
-        part2::try_step(&start_points[0], &map, &result);
+        part2::try_step(start_points[0], &map, &result);
 
         assert_eq!(20, *result.lock().unwrap());
     }

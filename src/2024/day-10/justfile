@@ -23,3 +23,6 @@ release:
 
 build:
     @cargo build --release
+
+get-input day:
+    ../scripts/get-aoc-input.rs --day {{justfile_directory()}} --current-working-directory {{justfile_directory()}}
