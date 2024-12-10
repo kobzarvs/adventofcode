@@ -1,4 +1,4 @@
-use day_09::*;
+use day_10::*;
 
 fn main() {
     // Run registered benchmarks.
@@ -7,16 +7,16 @@ fn main() {
 
 #[divan::bench]
 fn part1() {
-    part1::process(divan::black_box(include_str!(
-        "../input1.txt",
-    )))
-    .unwrap();
+    let input = include_str!("../data.txt");
+    let (map, start_points) = day_10::parser::parse(&input);
+
+    part1::solve(&map, &start_points);
 }
 
 #[divan::bench]
 fn part2() {
-    part2::process(divan::black_box(include_str!(
-        "../input2.txt",
-    )))
-    .unwrap();
+    let input = include_str!("../data.txt");
+    let (map, start_points) = day_10::parser::parse(&input);
+
+    part2::solve(&map, &start_points);
 }
