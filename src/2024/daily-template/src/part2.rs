@@ -1,9 +1,10 @@
-pub fn run() {
-    todo!("run parse & solve");
+use crate::{parse, Machine};
+
+pub fn run(input: &str) -> usize {
+    solve(&parse(&input))
 }
 
-fn solve() -> i32 {
-    todo!("add your code");
+fn solve(machines: &Vec<Machine>) -> usize {
     42
 }
 
@@ -14,10 +15,8 @@ mod tests {
     #[test]
     fn solve() {
         let input = include_str!("../test.txt");
-
-        todo!("modify this code");
-
         let data = parse(input);
-        assert_eq!(42, part2::solve(&data));
+
+        assert_eq!(480, part2::solve(&data));
     }
 }

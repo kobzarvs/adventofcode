@@ -6,10 +6,12 @@ fn main() {
 
 #[divan::bench]
 fn part1() {
-    part1::run();
+    let input = include_str!("../data.txt");
+    part1::run(input);
 }
 
 #[divan::bench]
 fn part2() {
-    part2::run();
+    let input = include_str!("../data.txt");
+    part2::run(input);
 }
