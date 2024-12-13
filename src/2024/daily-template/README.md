@@ -1,6 +1,6 @@
 ## Advent of code
 
-### day-10
+### {{crate_name}}
 
 #### Requirements
 - rust nightly build
