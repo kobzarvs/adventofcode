@@ -5,7 +5,7 @@ use geo::{Coord, Line};
 
 
 pub fn run(input: &str) -> i64 {
-    let machines = parse(&input);
+    let machines = parse(input);
     solve(&machines)
 }
 
@@ -38,7 +38,7 @@ fn solve(machines: &Vec<Machine<Coord>>) -> i64 {
                 }
             }
 
-            return 0;
+            0
         })
         .sum();
 

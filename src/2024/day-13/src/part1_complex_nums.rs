@@ -3,7 +3,7 @@ use std::io::Write;
 use crate::{parse_to_complex, Complex32, Machine};
 
 pub fn run(input: &str) -> i64 {
-    let machines = parse_to_complex(&input);
+    let machines = parse_to_complex(input);
     solve(&machines)
 }
 
@@ -60,7 +60,7 @@ mod tests {
     #[test]
     fn solve() {
         let input = include_str!("../test.txt");
-        let machines = parse_to_complex(&input);
+        let machines = parse_to_complex(input);
 
         assert_eq!(480, part1_complex_nums::solve(&machines));
     }

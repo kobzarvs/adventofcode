@@ -4,7 +4,7 @@ use std::io;
 use std::io::Write;
 
 pub fn run(input: &str) -> i64 {
-    let machines = parse(&input);
+    let machines = parse(input);
     solve(&machines)
 }
 
@@ -42,9 +42,9 @@ fn solve(machines: &Vec<Machine<Coord>>) -> i64 {
                 //     (a_moves, b_moves)
                 // );
                 io::stdout().flush().unwrap();
-                return 0;
+                0
             } else {
-                return 3 * (a_moves as i64) + b_moves as i64;
+                3 * (a_moves as i64) + b_moves as i64
             }
         })
         .sum()
