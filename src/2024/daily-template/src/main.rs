@@ -1,4 +1,4 @@
-use day_11::{part1, part2, read_file};
+use {{crate_name}}::{part1, part2, read_file};
 
 fn main() {
     let input = read_file();
