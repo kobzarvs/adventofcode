@@ -1,10 +1,10 @@
-use crate::models::{Robot, CENTER, HEIGHT, WIDTH};
+use crate::models::{Robot, HEIGHT, WIDTH};
 use crate::parse;
 use std::collections::HashMap;
 use std::hash::{DefaultHasher, Hash, Hasher};
 
 pub fn run(input: &str) -> i32 {
-    solve(&parse(&input))
+    solve(&parse(input))
 }
 
 fn get_picture_hash(robots: &[Robot]) -> u64 {
@@ -36,25 +36,25 @@ fn get_picture_hash(robots: &[Robot]) -> u64 {
     hasher.finish()
 }
 
-fn calculate_center_line_metrics(robots: &[Robot]) -> (f64, f64) {
+fn calculate_center_line_metrics(robots: &[Robot]) -> f64 {
     let n = robots.len() as f64;
 
     // Считаем среднее расстояние только по X от центральной линии
-    let mean_dist = robots
-        .iter()
-        .map(|r| ((r.p.x - CENTER) as f64).abs())
-        .sum::<f64>()
-        / n;
+    // let mean_dist = robots
+    //     .iter()
+    //     .map(|r| ((r.p.x - CENTER) as f64).abs())
+    //     .sum::<f64>()
+    //     / n;
 
     // Считаем дисперсию расстояний от центральной линии
-    let variance = robots
-        .iter()
-        .map(|r| {
-            let dist = ((r.p.x - CENTER) as f64).abs();
-            (dist - mean_dist).powi(2)
-        })
-        .sum::<f64>()
-        / n;
+    // let dispersion = robots
+    //     .iter()
+    //     .map(|r| {
+    //         let dist = ((r.p.x - CENTER) as f64).abs();
+    //         (dist - mean_dist).powi(2)
+    //     })
+    //     .sum::<f64>()
+    //     / n;
 
     // Считаем энтропию распределения по столбцам
     let mut column_counts = vec![0_i32; WIDTH as usize];
@@ -81,29 +81,29 @@ fn calculate_center_line_metrics(robots: &[Robot]) -> (f64, f64) {
             })
             .sum::<f64>();
 
-    (variance, entropy)
+    entropy
 }
 
 fn solve(data: &[Robot]) -> i32 {
     let mut robots = data.to_vec();
-    let mut entropy_map: HashMap<u64, (i32, f64, f64)> = HashMap::new();
+    let mut entropy_map: HashMap<u64, (i32, f64)> = HashMap::new();
     // let mut n = 0;
     let mut hash_counts = HashMap::new();
 
     for step in 0..=10_000 {
-        let (variance, entropy) = calculate_center_line_metrics(&robots);
+        let entropy = calculate_center_line_metrics(&robots);
         let hash = get_picture_hash(&robots);
         let count = hash_counts.entry(hash).or_insert(0);
-        
+
         if *count == 0 {
-            entropy_map.insert(hash, (step, variance, entropy));
+            entropy_map.insert(hash, (step, entropy));
         }
         *count += 1;
 
         // if entropy <= 8.5 && *count == 0 {
         //     println!(
-        //         "Step {}: Hash: {:?}, Center Variance = {:.2}, Column Entropy = {:.12}",
-        //         step, hash, variance, entropy
+        //         "Step {}: Hash: {:?}, Center dispersion = {:.2}, Column Entropy = {:.12}",
+        //         step, hash, dispersion, entropy
         //     );
         //     print_grid(&robots);
         //     *count += 1;
@@ -115,9 +115,9 @@ fn solve(data: &[Robot]) -> i32 {
         });
     }
 
-    let (hash, (step, variance, entropy)) = entropy_map
+    let (hash, (step, entropy)) = entropy_map
         .into_iter()
-        .min_by(|a, b| a.1 .2.total_cmp(&(b.1 .2)))
+        .min_by(|a, b| a.1 .1.total_cmp(&(b.1 .1)))
         .unwrap();
 
     let mut robots = data.to_vec();
@@ -125,8 +125,8 @@ fn solve(data: &[Robot]) -> i32 {
         robot.do_move(step);
     });
     println!(
-        "Step {}: Hash: {:?}, Center Variance = {:.2}, Column Entropy = {:.12}",
-        step, hash, variance, entropy
+        "Step {}: Hash: {:?}, Column Entropy = {:.12}",
+        step, hash, entropy
     );
     print_grid(&robots);
 
