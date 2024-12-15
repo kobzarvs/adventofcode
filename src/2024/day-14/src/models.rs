@@ -28,9 +28,9 @@ pub struct Robot {
 }
 
 impl Robot {
-    pub fn do_move(&mut self) -> Coord<i32> {
-        self.p.x = (self.p.x + self.v.x).rem_euclid(WIDTH);
-        self.p.y = (self.p.y + self.v.y).rem_euclid(HEIGHT);
+    pub fn do_move(&mut self, steps: i32) -> Coord<i32> {
+        self.p.x = (self.p.x + self.v.x * steps).rem_euclid(WIDTH);
+        self.p.y = (self.p.y + self.v.y * steps).rem_euclid(HEIGHT);
         self.p
     }
 }

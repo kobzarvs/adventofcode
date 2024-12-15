@@ -5,13 +5,13 @@ fn main() {
 }
 
 #[divan::bench]
-fn part1() {
+fn part1_product_by_quadrant() {
     let input = include_str!("../data.txt");
     part1::run(input);
 }
 
 #[divan::bench]
-fn part2() {
+fn part2_find_christmas_tree() {
     let input = include_str!("../data.txt");
     part2::run(input);
 }

@@ -14,7 +14,7 @@ fn solve(robots: &[Robot]) -> usize {
     
     // print_robots(&robots, Some(|robot| robot.p.x != CENTER && robot.p.y != MIDDLE));
     for _ in 0..N {
-        robots.iter_mut().for_each(|robot| { robot.do_move(); });
+        robots.iter_mut().for_each(|robot| { robot.do_move(1); });
     }
     // print_robots(&robots, Some(|robot| robot.p.x != CENTER && robot.p.y != MIDDLE));
     
