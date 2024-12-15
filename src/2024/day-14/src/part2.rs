@@ -65,17 +65,17 @@ fn calculate_center_line_metrics(robots: &[Robot]) -> (f64, f64) {
     }
 
     let entropy = column_counts
-        .iter()
-        .filter(|&&count| count > 0)
-        .map(|&count| {
+        .into_iter()
+        .filter(|&count| count > 0)
+        .map(|count| {
             let p = count as f64 / n;
             -p * p.ln()
         })
         .sum::<f64>()
         + row_counts
-            .iter()
-            .filter(|&&count| count > 0)
-            .map(|&count| {
+            .into_iter()
+            .filter(|&count| count > 0)
+            .map(|count| {
                 let p = count as f64 / n;
                 -p * p.ln()
             })
