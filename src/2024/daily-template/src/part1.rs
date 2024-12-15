@@ -1,11 +1,11 @@
-use crate::{parse, Machine};
+use crate::{parse};
 
-pub fn run(input: &str) -> usize {
+pub fn run(input: &str) -> todo!("type") {
     solve(&parse(&input))
 }
 
-fn solve(machines: &Vec<Machine>) -> usize {
-    42
+fn solve(data: todo!("model")) -> todo!("type") {
+    todo!("result")
 }
 
 #[cfg(test)]
@@ -17,6 +17,6 @@ mod tests {
         let input = include_str!("../test.txt");
         let data = parse(input);
 
-        assert_eq!(480, part1::solve(&data));
+        assert_eq!(todo!("expect"), part1::solve(&data));
     }
 }
