@@ -4,7 +4,7 @@ use crate::models::{Robot, HEIGHT, WIDTH, CENTER, MIDDLE};
 
 
 pub fn run(input: &str) -> usize {
-    solve(&parse(&input))
+    solve(&parse(input))
 }
 
 const N: usize = 100;

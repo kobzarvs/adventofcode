@@ -1,37 +1,12 @@
 use crate::parse;
 use crate::models::{Robot, HEIGHT, WIDTH, CENTER};
-use std::collections::HashSet;
 use std::hash::{Hash, Hasher, DefaultHasher};
 use std::collections::HashMap;
 
-#[derive(Clone, Eq)]
-struct RobotsState {
-    positions: Vec<(i32, i32)>
-}
-
-impl PartialEq for RobotsState {
-    fn eq(&self, other: &Self) -> bool {
-        let mut self_pos = self.positions.clone();
-        let mut other_pos = other.positions.clone();
-        self_pos.sort_unstable();
-        other_pos.sort_unstable();
-        self_pos == other_pos
-    }
-}
-
-impl Hash for RobotsState {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        let mut positions = self.positions.clone();
-        positions.sort_unstable();
-        positions.hash(state);
-    }
-}
 
 pub fn run(input: &str) -> usize {
     solve(&parse(&input))
 }
-
-const N: usize = 100;
 
 fn get_picture_hash(robots: &[Robot]) -> u64 {
     // Создаем строковое представление рисунка
@@ -95,10 +70,12 @@ fn solve(robots: &[Robot]) -> usize {
     let mut robots = robots.to_vec();
     let mut hash_counts = HashMap::new();
     let mut n = 0;
+    let mut last_hash: u64 = 0;
     
     for step in 0..=6888 {
         let (variance, entropy) = calculate_center_line_metrics(&robots);
         let hash = get_picture_hash(&robots);
+        last_hash = hash;
         let count = hash_counts.entry(hash).or_insert(0);
         
         if entropy < 3.9 && *count == 0 {
@@ -116,7 +93,7 @@ fn solve(robots: &[Robot]) -> usize {
     
     println!("count: {n}");
     
-    hash_counts.values().filter(|&&count| count > 1).count()
+    last_hash as usize
 }
 
 fn print_grid(robots: &[Robot]) {
@@ -131,9 +108,9 @@ fn print_grid(robots: &[Robot]) {
     for row in grid {
         for count in row {
             if count == 0 {
-                print!(".");
+                print!(" ");
             } else {
-                print!("{:1}", count);
+                print!("#");
             }
         }
         println!();
@@ -149,7 +126,7 @@ mod tests {
     fn solve() {
         let input = include_str!("../test.txt");
         let data = parse(input);
-
-        assert_eq!(0, part2::solve(&data));
+        
+        assert_eq!(11711317961654825178, part2::solve(&data));
     }
 }
