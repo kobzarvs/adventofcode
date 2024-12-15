@@ -64,7 +64,7 @@ fn calculate_center_line_metrics(robots: &[Robot]) -> f64 {
         row_counts[robot.p.y as usize] += 1;
     }
 
-    let entropy = column_counts
+    column_counts
         .into_iter()
         .filter(|&count| count > 0)
         .map(|count| {
@@ -79,9 +79,7 @@ fn calculate_center_line_metrics(robots: &[Robot]) -> f64 {
                 let p = count as f64 / n;
                 -p * p.ln()
             })
-            .sum::<f64>();
-
-    entropy
+            .sum::<f64>()
 }
 
 fn solve(data: &[Robot]) -> i32 {
@@ -94,7 +92,7 @@ fn solve(data: &[Robot]) -> i32 {
         let entropy = calculate_center_line_metrics(&robots);
         let hash = get_picture_hash(&robots);
         let count = hash_counts.entry(hash).or_insert(0);
-
+        // println!("{:.12}", entropy);
         if *count == 0 {
             entropy_map.insert(hash, (step, entropy));
         }

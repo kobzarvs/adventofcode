@@ -2,6 +2,8 @@
 
 ### day_14
 
+![chart](./part2-entropy-chart.png)
+
 #### Requirements
 - rust nightly build
 - [just](https://just.systems/man/en/)
