@@ -52,12 +52,7 @@ pub fn find_path_min_turns(
     let mut best_effective = i32::MAX;
     let mut best_path = None;
 
-    for &dir in &[
-        Dir::North,
-        Dir::South,
-        Dir::East,
-        Dir::West,
-    ] {
+    for &dir in &[Dir::North, Dir::South, Dir::East, Dir::West] {
         heap.push(State {
             effect: 0,
             turns: 1,
@@ -126,12 +121,7 @@ pub fn find_path_min_turns(
             );
         }
 
-        for new_dir in [
-            Dir::North,
-            Dir::South,
-            Dir::East,
-            Dir::West,
-        ] {
+        for new_dir in [Dir::North, Dir::South, Dir::East, Dir::West] {
             let new_turns = if new_dir == direction {
                 turns
             } else {
@@ -200,12 +190,7 @@ pub fn find_paths_with_effective(
 
     let mut target_paths_count = 0;
 
-    for &dir in &[
-        Dir::North,
-        Dir::South,
-        Dir::East,
-        Dir::West,
-    ] {
+    for &dir in &[Dir::North, Dir::South, Dir::East, Dir::West] {
         heap.push(State {
             effect: 1_000_000,
             turns: 1,
@@ -272,12 +257,7 @@ pub fn find_paths_with_effective(
         );
         // }
 
-        for dir in [
-            Dir::North,
-            Dir::South,
-            Dir::East,
-            Dir::West,
-        ] {
+        for dir in [Dir::North, Dir::South, Dir::East, Dir::West] {
             let new_turns = if dir == direction { turns } else { turns + 1 };
             let new_moves = moves + 1;
             let new_effective = 1000 * new_turns + new_moves;
@@ -514,11 +494,11 @@ pub fn find_all_paths(maze: &Vec<Vec<bool>>, start: Point, end: Point, goal_fx: 
                     .parent
                     .as_ref()
                     .map_or(false, |p| p.has_in_path(new_pos));
-                
+
                 if is_visited {
                     continue;
                 }
-                
+
                 let new_turns = if new_dir == state.dir {
                     state.turns
                 } else {
@@ -550,8 +530,8 @@ pub fn find_all_paths(maze: &Vec<Vec<bool>>, start: Point, end: Point, goal_fx: 
 
     let mut uniq_cells: HashSet<Point> = HashSet::new();
 
-    for info in found_paths {
-        info.get_full_path_iter().for_each(|it| {
+    for path in found_paths {
+        path.get_full_path_iter().for_each(|it| {
             uniq_cells.insert(it);
         });
     }
