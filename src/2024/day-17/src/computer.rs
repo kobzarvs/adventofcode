@@ -101,7 +101,7 @@ impl Computer {
                     outputs.push((combo_value % 8).to_string());
                     self.ip += 1;
                     // println!("id: {}, out {} => {:?}", id, op, self);
-                    print!("id: {:9}\r", id);
+                    // print!("id: {:9}\r", id);
                 },
                 Instr::BDV(op) => {
                     let combo_value = self.get_combo_value(*op);
