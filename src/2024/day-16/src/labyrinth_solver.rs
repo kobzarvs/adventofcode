@@ -1,5 +1,4 @@
 use itertools::Itertools;
-use std::cell::RefCell;
 use std::cmp::Ordering;
 use std::collections::HashSet;
 use std::collections::{BinaryHeap, HashMap};
@@ -372,64 +371,43 @@ pub fn print_path(maze: &Vec<Vec<bool>>, path: &Vec<(i32, i32)>) {
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct MazePath {
-    pub parent: Option<Rc<RefCell<MazePath>>>,
+    pub parent: Option<Rc<MazePath>>,
     pub turns: i32,
     pub length: i32,
     pub pos: (i32, i32),
     pub dir: Direction,
     pub effect: i32,
-    pub cache: RefCell<HashSet<(i32, i32)>>,
 }
 
 pub struct MazePathIterator {
-    current: Option<Rc<RefCell<MazePath>>>,
+    current: Option<Rc<MazePath>>,
 }
 
 impl MazePath {
     pub fn iter(&self) -> MazePathIterator {
         MazePathIterator {
-            current: Some(Rc::new(RefCell::new(self.clone()))),
+            current: self.parent.clone(),
         }
     }
-
+    
     fn has_in_path(&self, pos: (i32, i32)) -> bool {
-        if let Some(ref parent) = self.parent {
-            if parent.borrow().has_in_path(pos) {
-                return true;
-            }
+        if pos == self.pos {
+            return true;
         }
-        false
-    }
-
-    fn get_full_path(&self, include_self: bool) -> Vec<(i32, i32)> {
-        if include_self {
-            self.iter().map(|path| path.borrow().pos).collect_vec()
-        } else {
-            if let Some(parent) = &self.parent {
-                parent
-                    .borrow()
-                    .iter()
-                    .map(|path| path.borrow().pos)
-                    .collect_vec()
-            } else {
-                vec![]
-            }
-        }
+        self.parent.as_ref().map_or(false, |parent| parent.has_in_path(pos))
     }
 
     pub fn get_full_path_iter(&self) -> impl Iterator<Item = (i32, i32)> + '_ {
-        self.iter().map(|path| path.borrow().pos)
+        std::iter::once(self.pos).chain(self.iter().map(|path| path.pos))
     }
 }
 
 impl Iterator for MazePathIterator {
-    type Item = Rc<RefCell<MazePath>>;
+    type Item = Rc<MazePath>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let current = self.current.take()?;
-        if let Some(parent) = &current.borrow().parent {
-            self.current = Some(Rc::clone(parent));
-        }
+        let current = self.current.clone()?;
+        self.current = current.parent.clone();
         Some(current)
     }
 }
@@ -512,7 +490,6 @@ pub fn find_all_paths(
         pos: start,
         dir: Direction::None,
         effect: 0,
-        cache: RefCell::new(Default::default()),
     });
 
     while let Some(state) = heap.pop() {
@@ -573,7 +550,7 @@ pub fn find_all_paths(
             if b_state
                 .parent
                 .as_ref()
-                .map_or(false, |p| p.borrow().has_in_path(new_pos))
+                .map_or(false, |p| p.has_in_path(new_pos))
             {
                 continue;
             }
@@ -597,13 +574,12 @@ pub fn find_all_paths(
                     .push((b_state.pos, b_state.dir));
 
                 let item = MazePath {
-                    parent: Some(b_state.clone()), //Some(Rc::clone(&rc_state)),
+                    parent: Some(Rc::new(b_state.clone())),
                     turns: new_turns,
                     length: new_moves,
                     dir: new_dir,
                     pos: new_pos,
                     effect: new_effect,
-                    cache: RefCell::new(Default::default()),
                 };
 
                 heap.push(item);
