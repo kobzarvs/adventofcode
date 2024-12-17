@@ -1,9 +1,14 @@
 use itertools::Itertools;
+use std::cell::RefCell;
 use std::cmp::Ordering;
 use std::collections::HashSet;
 use std::collections::{BinaryHeap, HashMap};
 use std::io;
-use std::io::Read;
+use std::io::Write;
+// use std::io;
+// use std::io::Read;
+use std::rc::Rc;
+// #region-begin
 
 #[derive(Eq, PartialEq)]
 struct State {
@@ -156,11 +161,12 @@ pub fn find_path_min_turns(
         }
     }
 
-    println!("Поиск завершен после {} шагов. Лучшая эффективность: {}, Путь найден: {}. Размер очереди: {}, Размер visited: {}", 
-        steps, best_effective, best_path.is_some(), heap.len(), visited.len());
+    println!("Поиск завершен после {} шагов. Лучшая эффективность: {}, Путь найден: {}. Размер очереди: {}, Размер visited: {}",
+             steps, best_effective, best_path.is_some(), heap.len(), visited.len());
     best_path
 }
 
+#[inline]
 fn direction_to_delta(dir: Direction) -> (i32, i32) {
     match dir {
         Direction::North => (0, -1),
@@ -171,6 +177,7 @@ fn direction_to_delta(dir: Direction) -> (i32, i32) {
     }
 }
 
+#[inline]
 fn is_valid_position(maze: &Vec<Vec<bool>>, pos: (i32, i32)) -> bool {
     pos.0 >= 0
         && pos.1 >= 0
@@ -361,20 +368,75 @@ pub fn print_path(maze: &Vec<Vec<bool>>, path: &Vec<(i32, i32)>) {
     println!();
 }
 
+// #region-end
+
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct MazePath {
-    pub path: Vec<(i32, i32)>,
-    pub directions: Vec<Direction>,
+    pub parent: Option<Rc<RefCell<MazePath>>>,
     pub turns: i32,
     pub length: i32,
-    pub start: (i32, i32),
+    pub pos: (i32, i32),
     pub dir: Direction,
     pub effect: i32,
+    pub cache: RefCell<HashSet<(i32, i32)>>,
+}
+
+pub struct MazePathIterator {
+    current: Option<Rc<RefCell<MazePath>>>,
+}
+
+impl MazePath {
+    pub fn iter(&self) -> MazePathIterator {
+        MazePathIterator {
+            current: Some(Rc::new(RefCell::new(self.clone()))),
+        }
+    }
+
+    fn has_in_path(&self, pos: (i32, i32)) -> bool {
+        if let Some(ref parent) = self.parent {
+            if parent.borrow().has_in_path(pos) {
+                return true;
+            }
+        }
+        false
+    }
+
+    fn get_full_path(&self, include_self: bool) -> Vec<(i32, i32)> {
+        if include_self {
+            self.iter().map(|path| path.borrow().pos).collect_vec()
+        } else {
+            if let Some(parent) = &self.parent {
+                parent
+                    .borrow()
+                    .iter()
+                    .map(|path| path.borrow().pos)
+                    .collect_vec()
+            } else {
+                vec![]
+            }
+        }
+    }
+
+    pub fn get_full_path_iter(&self) -> impl Iterator<Item = (i32, i32)> + '_ {
+        self.iter().map(|path| path.borrow().pos)
+    }
+}
+
+impl Iterator for MazePathIterator {
+    type Item = Rc<RefCell<MazePath>>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let current = self.current.take()?;
+        if let Some(parent) = &current.borrow().parent {
+            self.current = Some(Rc::clone(parent));
+        }
+        Some(current)
+    }
 }
 
 impl Ord for MazePath {
     fn cmp(&self, other: &Self) -> Ordering {
-        other.length.cmp(&self.length)
+        other.effect.cmp(&self.effect)
     }
 }
 
@@ -384,7 +446,7 @@ impl PartialOrd for MazePath {
     }
 }
 
-pub fn print_path_2(maze: &Vec<Vec<bool>>, info: &MazePath, head: (i32, i32)) {
+pub fn print_path_w4(maze: &Vec<Vec<bool>>, path: &Vec<(i32, i32)>, head: (i32, i32)) {
     let mut i = 1;
     for y in 0..maze.len() as i32 {
         for x in 0..maze[0].len() as i32 {
@@ -392,7 +454,7 @@ pub fn print_path_2(maze: &Vec<Vec<bool>>, info: &MazePath, head: (i32, i32)) {
                 print!(" @  ");
                 continue;
             }
-            if info.path.iter().any(|&it| it == (x, y)) {
+            if path.contains(&(x, y)) {
                 print!(" {:>2} ", i);
                 i += 1;
             } else if maze[y as usize][x as usize] {
@@ -406,48 +468,94 @@ pub fn print_path_2(maze: &Vec<Vec<bool>>, info: &MazePath, head: (i32, i32)) {
     println!();
 }
 
+const WIN: i32 = 96;
 
-pub fn find_all_paths(maze: &Vec<Vec<bool>>, start: (i32, i32), end: (i32, i32), target_effect: i32) -> usize {
+pub fn print_path_w1(maze: &Vec<Vec<bool>>, path: &Vec<(i32, i32)>, head: (i32, i32)) {
+    // let offset = if head.1 < (maze.len() as i32 - WIN + 20) as i32 {head.1 - 20} else {WIN};
+    let from = (head.1 - 15).min(WIN).max(0);
+    for y in from..(maze.len() as i32 - WIN + from) as i32 {
+        for x in 0..maze[0].len() as i32 {
+            if head.0 == x && head.1 == y {
+                print!("@");
+                continue;
+            }
+            if path.contains(&(x, y)) {
+                print!("O");
+            } else if maze[y as usize][x as usize] {
+                print!(" ");
+            } else {
+                print!(".");
+            }
+        }
+        println!();
+    }
+    // println!();
+    io::stdout().flush().unwrap();
+}
+
+pub fn find_all_paths(
+    maze: &Vec<Vec<bool>>,
+    start: (i32, i32),
+    end: (i32, i32),
+    target_effect: i32,
+) -> usize {
     let mut heap = BinaryHeap::new();
     let mut came_from = HashMap::<(i32, i32), Vec<((i32, i32), Direction)>>::new();
     let mut found_paths = Vec::new();
     let mut steps = 0;
+    let mut fx = HashMap::<((i32, i32), Direction), i32>::new();
 
     heap.push(MazePath {
-        path: vec![],
-        directions: vec![],
+        parent: None,
         turns: 0,
         length: 0,
-        start,
+        pos: start,
         dir: Direction::None,
         effect: 0,
+        cache: RefCell::new(Default::default()),
     });
 
-    while let Some(mut state) = heap.pop() {
-        let cloned_state = state.clone();
-        let curr_pos = state.start;
-        let curr_dir = state.dir;
-        let curr_moves = state.length;
-        let curr_turns = state.turns;
-        let mut curr_path = state.path;
-        let mut curr_dirs = state.directions;
-        let mut curr_effect = state.effect;
-
-        if curr_path.contains(&curr_pos) {
-            continue;
-        }
-        curr_path.push(curr_pos);
-        curr_dirs.push(curr_dir);
+    while let Some(state) = heap.pop() {
+        // let rc_state = Rc::new(RefCell::new(state));
+        // let shared_state = Rc::clone(&rc_state);
+        let b_state = state; //shared_state.borrow();
 
         steps += 1;
 
-        if curr_pos == end {
-            if curr_effect == target_effect {
-                found_paths.push(cloned_state);
-                println!("curr_effect: {}", curr_effect);
-            }
+        // if steps % 10_000 == 0 {
+        //     let state = rc_state.clone();
+        //     // print!("\x1B[2J\x1B[1;1H\n\n");
+        //     print!(
+        //         "step: {:9}, pos: {:?}, turns: {:5}, effect: {:5}, len: {:5}, max_len: {:5}, paths: {}\n",
+        //         steps, state.pos, state.length, state.turns, state.effect, max_len, found_paths.len()
+        //     );
+        //     // stack.iter().for_each(|item| print!("{} ", item.effect));
+        //     // println!();
+        //
+        //     print_path_w1(
+        //         &maze,
+        //         &rc_state.clone().get_full_path(true),
+        //         curr_pos,
+        //     );
+        //     // std::thread::sleep(std::time::Duration::from_millis(16));
+        // }
+
+        if b_state.pos == end && b_state.effect == target_effect {
+            // found_paths.push(Rc::clone(&rc_state));
+            found_paths.push(b_state);
+            // println!(
+            //     "Найден путь с effect: {}, Всего путей: {}",
+            //     curr_effect,
+            //     found_paths.len()
+            // );
             continue;
         }
+
+        let state_key = (b_state.pos, b_state.dir);
+        if fx.get(&state_key).map_or(false, |&t| t < b_state.effect) {
+            continue;
+        }
+        fx.insert(state_key, b_state.effect);
 
         for new_dir in [
             Direction::North,
@@ -456,64 +564,63 @@ pub fn find_all_paths(maze: &Vec<Vec<bool>>, start: (i32, i32), end: (i32, i32),
             Direction::West,
         ] {
             let (dx, dy) = direction_to_delta(new_dir);
-            let new_pos = (curr_pos.0 + dx, curr_pos.1 + dy);
-            let new_moves = curr_moves + 1;
-            let mut can_move = is_valid_position(maze, new_pos);
+            let new_pos = (b_state.pos.0 + dx, b_state.pos.1 + dy);
+            let new_moves = b_state.length + 1;
+            let can_move = is_valid_position(maze, new_pos);
 
-            let new_turns = if new_dir == curr_dir {
-                curr_turns
+            // if Rc::clone(&rc_state)
+            //     .borrow()
+            if b_state
+                .parent
+                .as_ref()
+                .map_or(false, |p| p.borrow().has_in_path(new_pos))
+            {
+                continue;
+            }
+
+            let new_turns = if new_dir == b_state.dir {
+                b_state.turns
             } else {
-                curr_turns + 1
+                b_state.turns + 1
             };
 
             let new_effect = 1000 * new_turns + new_moves;
-            
+
             if new_effect > target_effect {
                 continue;
             }
-            
-            if can_move && !curr_path.iter().any(|&it| it == new_pos) {
+
+            if can_move {
                 came_from
                     .entry(new_pos)
                     .or_insert_with(Vec::new)
-                    .push((curr_pos, curr_dir));
+                    .push((b_state.pos, b_state.dir));
 
                 let item = MazePath {
-                    path: curr_path.clone(),
-                    directions: curr_dirs.clone(),
+                    parent: Some(b_state.clone()), //Some(Rc::clone(&rc_state)),
                     turns: new_turns,
                     length: new_moves,
                     dir: new_dir,
-                    start: new_pos,
+                    pos: new_pos,
                     effect: new_effect,
+                    cache: RefCell::new(Default::default()),
                 };
-                heap.push(item.clone());
+
+                heap.push(item);
             }
         }
     }
 
     println!("\nПоиск завершен после {} шагов", steps);
     println!("Найдено {} путей", found_paths.len());
-    
-    let mut uniq_cells: HashSet<(i32, i32)> = HashSet::new();
-    
-    
-    for info in found_paths {
-        uniq_cells.extend(info.path);
-    }
-    uniq_cells.insert(end);
-    let result = uniq_cells.len();
-    
-    let item = MazePath {
-        path: uniq_cells.into_iter().collect::<Vec<(i32, i32)>>(),
-        directions: vec![],
-        turns: 0,
-        length: 0,
-        dir: Direction::None,
-        start,
-        effect: 0,
-    };
-    print_path_2(&maze, &item, (-1, -1));
 
-    result
+    let mut uniq_cells: HashSet<(i32, i32)> = HashSet::new();
+
+    for info in found_paths {
+        info.get_full_path_iter().for_each(|it| {
+            uniq_cells.insert(it);
+        });
+    }
+
+    uniq_cells.len()
 }
