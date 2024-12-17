@@ -6,6 +6,7 @@ use std::io;
 use std::io::Write;
 // use std::io;
 // use std::io::Read;
+use crate::Point;
 use std::rc::Rc;
 // #region-begin
 
@@ -14,8 +15,8 @@ struct State {
     effect: i32,
     turns: i32,
     moves: i32,
-    position: (i32, i32),
-    direction: Direction,
+    position: Point,
+    direction: Dir,
 }
 
 impl Ord for State {
@@ -31,7 +32,7 @@ impl PartialOrd for State {
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
-pub enum Direction {
+pub enum Dir {
     North,
     South,
     East,
@@ -41,21 +42,21 @@ pub enum Direction {
 
 pub fn find_path_min_turns(
     maze: &Vec<Vec<bool>>,
-    start: (i32, i32),
-    end: (i32, i32),
-) -> Option<(Vec<(i32, i32)>, i32)> {
+    start: Point,
+    end: Point,
+) -> Option<(Vec<Point>, i32)> {
     let mut heap = BinaryHeap::new();
-    let mut visited = HashMap::<((i32, i32), Direction), i32>::new();
-    let mut came_from = HashMap::<(i32, i32), ((i32, i32), Direction)>::new();
+    let mut visited = HashMap::<(Point, Dir), i32>::new();
+    let mut came_from = HashMap::<Point, (Point, Dir)>::new();
     let mut steps = 0;
     let mut best_effective = i32::MAX;
     let mut best_path = None;
 
     for &dir in &[
-        Direction::North,
-        Direction::South,
-        Direction::East,
-        Direction::West,
+        Dir::North,
+        Dir::South,
+        Dir::East,
+        Dir::West,
     ] {
         heap.push(State {
             effect: 0,
@@ -126,10 +127,10 @@ pub fn find_path_min_turns(
         }
 
         for new_dir in [
-            Direction::North,
-            Direction::South,
-            Direction::East,
-            Direction::West,
+            Dir::North,
+            Dir::South,
+            Dir::East,
+            Dir::West,
         ] {
             let new_turns = if new_dir == direction {
                 turns
@@ -166,18 +167,18 @@ pub fn find_path_min_turns(
 }
 
 #[inline]
-fn direction_to_delta(dir: Direction) -> (i32, i32) {
+fn direction_to_delta(dir: Dir) -> Point {
     match dir {
-        Direction::North => (0, -1),
-        Direction::South => (0, 1),
-        Direction::East => (1, 0),
-        Direction::West => (-1, 0),
+        Dir::North => (0, -1),
+        Dir::South => (0, 1),
+        Dir::East => (1, 0),
+        Dir::West => (-1, 0),
         _ => unreachable!(),
     }
 }
 
 #[inline]
-fn is_valid_position(maze: &Vec<Vec<bool>>, pos: (i32, i32)) -> bool {
+fn is_valid_position(maze: &Vec<Vec<bool>>, pos: Point) -> bool {
     pos.0 >= 0
         && pos.1 >= 0
         && (pos.0 as usize) < maze[0].len()
@@ -187,23 +188,23 @@ fn is_valid_position(maze: &Vec<Vec<bool>>, pos: (i32, i32)) -> bool {
 
 pub fn find_paths_with_effective(
     maze: &Vec<Vec<bool>>,
-    start: (i32, i32),
-    end: (i32, i32),
+    start: Point,
+    end: Point,
     target_effective: i32,
-) -> Vec<(Vec<(i32, i32)>, i32)> {
+) -> Vec<(Vec<Point>, i32)> {
     let mut heap = BinaryHeap::new();
-    let mut visited = HashMap::<((i32, i32), Direction), i32>::new();
-    let mut came_from = HashMap::<(i32, i32), Vec<((i32, i32), Direction)>>::new();
+    let mut visited = HashMap::<(Point, Dir), i32>::new();
+    let mut came_from = HashMap::<Point, Vec<(Point, Dir)>>::new();
     let mut found_paths = Vec::new();
     let mut steps = 0;
 
     let mut target_paths_count = 0;
 
     for &dir in &[
-        Direction::North,
-        Direction::South,
-        Direction::East,
-        Direction::West,
+        Dir::North,
+        Dir::South,
+        Dir::East,
+        Dir::West,
     ] {
         heap.push(State {
             effect: 1_000_000,
@@ -272,10 +273,10 @@ pub fn find_paths_with_effective(
         // }
 
         for dir in [
-            Direction::North,
-            Direction::South,
-            Direction::East,
-            Direction::West,
+            Dir::North,
+            Dir::South,
+            Dir::East,
+            Dir::West,
         ] {
             let new_turns = if dir == direction { turns } else { turns + 1 };
             let new_moves = moves + 1;
@@ -317,11 +318,11 @@ pub fn find_paths_with_effective(
 
 fn collect_paths(
     maze: &Vec<Vec<bool>>,
-    start: (i32, i32),
-    current: (i32, i32),
+    start: Point,
+    current: Point,
     turns: i32,
-    came_from: &HashMap<(i32, i32), Vec<((i32, i32), Direction)>>,
-    found_paths: &mut Vec<(Vec<(i32, i32)>, i32)>,
+    came_from: &HashMap<Point, Vec<(Point, Dir)>>,
+    found_paths: &mut Vec<(Vec<Point>, i32)>,
 ) {
     let mut stack = vec![(current, vec![current])];
     let mut visited = HashSet::new();
@@ -349,7 +350,7 @@ fn collect_paths(
     }
 }
 
-pub fn print_path(maze: &Vec<Vec<bool>>, path: &Vec<(i32, i32)>) {
+pub fn print_path(maze: &Vec<Vec<bool>>, path: &Vec<Point>) {
     // let path_set: HashSet<_> = path.iter().cloned().collect();
 
     for y in 0..maze.len() {
@@ -374,8 +375,8 @@ pub struct MazePath {
     pub parent: Option<Rc<MazePath>>,
     pub turns: i32,
     pub length: i32,
-    pub pos: (i32, i32),
-    pub dir: Direction,
+    pub pos: Point,
+    pub dir: Dir,
     pub effect: i32,
 }
 
@@ -389,15 +390,17 @@ impl MazePath {
             current: self.parent.clone(),
         }
     }
-    
-    fn has_in_path(&self, pos: (i32, i32)) -> bool {
+
+    fn has_in_path(&self, pos: Point) -> bool {
         if pos == self.pos {
             return true;
         }
-        self.parent.as_ref().map_or(false, |parent| parent.has_in_path(pos))
+        self.parent
+            .as_ref()
+            .map_or(false, |parent| parent.has_in_path(pos))
     }
 
-    pub fn get_full_path_iter(&self) -> impl Iterator<Item = (i32, i32)> + '_ {
+    pub fn get_full_path_iter(&self) -> impl Iterator<Item = Point> + '_ {
         std::iter::once(self.pos).chain(self.iter().map(|path| path.pos))
     }
 }
@@ -424,7 +427,7 @@ impl PartialOrd for MazePath {
     }
 }
 
-pub fn print_path_w4(maze: &Vec<Vec<bool>>, path: &Vec<(i32, i32)>, head: (i32, i32)) {
+pub fn print_path_w4(maze: &Vec<Vec<bool>>, path: &Vec<Point>, head: Point) {
     let mut i = 1;
     for y in 0..maze.len() as i32 {
         for x in 0..maze[0].len() as i32 {
@@ -448,7 +451,7 @@ pub fn print_path_w4(maze: &Vec<Vec<bool>>, path: &Vec<(i32, i32)>, head: (i32, 
 
 const WIN: i32 = 96;
 
-pub fn print_path_w1(maze: &Vec<Vec<bool>>, path: &Vec<(i32, i32)>, head: (i32, i32)) {
+pub fn print_path_w1(maze: &[Vec<bool>], path: &[Point], head: Point) {
     // let offset = if head.1 < (maze.len() as i32 - WIN + 20) as i32 {head.1 - 20} else {WIN};
     let from = (head.1 - 15).min(WIN).max(0);
     for y in from..(maze.len() as i32 - WIN + from) as i32 {
@@ -471,110 +474,65 @@ pub fn print_path_w1(maze: &Vec<Vec<bool>>, path: &Vec<(i32, i32)>, head: (i32, 
     io::stdout().flush().unwrap();
 }
 
-pub fn find_all_paths(
-    maze: &Vec<Vec<bool>>,
-    start: (i32, i32),
-    end: (i32, i32),
-    target_effect: i32,
-) -> usize {
+pub fn find_all_paths(maze: &Vec<Vec<bool>>, start: Point, end: Point, goal_fx: i32) -> usize {
     let mut heap = BinaryHeap::new();
-    let mut came_from = HashMap::<(i32, i32), Vec<((i32, i32), Direction)>>::new();
     let mut found_paths = Vec::new();
+    let mut fx = HashMap::<(Point, Dir), i32>::new();
     let mut steps = 0;
-    let mut fx = HashMap::<((i32, i32), Direction), i32>::new();
 
     heap.push(MazePath {
         parent: None,
         turns: 0,
         length: 0,
         pos: start,
-        dir: Direction::None,
+        dir: Dir::None,
         effect: 0,
     });
 
     while let Some(state) = heap.pop() {
-        // let rc_state = Rc::new(RefCell::new(state));
-        // let shared_state = Rc::clone(&rc_state);
-        let b_state = state; //shared_state.borrow();
-
         steps += 1;
 
-        // if steps % 10_000 == 0 {
-        //     let state = rc_state.clone();
-        //     // print!("\x1B[2J\x1B[1;1H\n\n");
-        //     print!(
-        //         "step: {:9}, pos: {:?}, turns: {:5}, effect: {:5}, len: {:5}, max_len: {:5}, paths: {}\n",
-        //         steps, state.pos, state.length, state.turns, state.effect, max_len, found_paths.len()
-        //     );
-        //     // stack.iter().for_each(|item| print!("{} ", item.effect));
-        //     // println!();
-        //
-        //     print_path_w1(
-        //         &maze,
-        //         &rc_state.clone().get_full_path(true),
-        //         curr_pos,
-        //     );
-        //     // std::thread::sleep(std::time::Duration::from_millis(16));
-        // }
-
-        if b_state.pos == end && b_state.effect == target_effect {
-            // found_paths.push(Rc::clone(&rc_state));
-            found_paths.push(b_state);
-            // println!(
-            //     "Найден путь с effect: {}, Всего путей: {}",
-            //     curr_effect,
-            //     found_paths.len()
-            // );
+        if state.pos == end && state.effect == goal_fx {
+            found_paths.push(state);
             continue;
         }
 
-        let state_key = (b_state.pos, b_state.dir);
-        if fx.get(&state_key).map_or(false, |&t| t < b_state.effect) {
+        let state_key = (state.pos, state.dir);
+        if fx.get(&state_key).map_or(false, |&t| t < state.effect) {
             continue;
         }
-        fx.insert(state_key, b_state.effect);
+        fx.insert(state_key, state.effect);
 
-        for new_dir in [
-            Direction::North,
-            Direction::South,
-            Direction::East,
-            Direction::West,
-        ] {
+        for new_dir in [Dir::North, Dir::South, Dir::East, Dir::West] {
             let (dx, dy) = direction_to_delta(new_dir);
-            let new_pos = (b_state.pos.0 + dx, b_state.pos.1 + dy);
-            let new_moves = b_state.length + 1;
+            let new_pos = (state.pos.0 + dx, state.pos.1 + dy);
+            let new_moves = state.length + 1;
             let can_move = is_valid_position(maze, new_pos);
 
-            // if Rc::clone(&rc_state)
-            //     .borrow()
-            if b_state
-                .parent
-                .as_ref()
-                .map_or(false, |p| p.has_in_path(new_pos))
-            {
-                continue;
-            }
-
-            let new_turns = if new_dir == b_state.dir {
-                b_state.turns
-            } else {
-                b_state.turns + 1
-            };
-
-            let new_effect = 1000 * new_turns + new_moves;
-
-            if new_effect > target_effect {
-                continue;
-            }
-
             if can_move {
-                came_from
-                    .entry(new_pos)
-                    .or_insert_with(Vec::new)
-                    .push((b_state.pos, b_state.dir));
+                let is_visited = state
+                    .parent
+                    .as_ref()
+                    .map_or(false, |p| p.has_in_path(new_pos));
+                
+                if is_visited {
+                    continue;
+                }
+                
+                let new_turns = if new_dir == state.dir {
+                    state.turns
+                } else {
+                    state.turns + 1
+                };
+
+                let new_effect = 1000 * new_turns + new_moves;
+
+                if new_effect > goal_fx {
+                    continue;
+                }
 
                 let item = MazePath {
-                    parent: Some(Rc::new(b_state.clone())),
+                    parent: Some(Rc::new(state.clone())),
                     turns: new_turns,
                     length: new_moves,
                     dir: new_dir,
@@ -590,7 +548,7 @@ pub fn find_all_paths(
     println!("\nПоиск завершен после {} шагов", steps);
     println!("Найдено {} путей", found_paths.len());
 
-    let mut uniq_cells: HashSet<(i32, i32)> = HashSet::new();
+    let mut uniq_cells: HashSet<Point> = HashSet::new();
 
     for info in found_paths {
         info.get_full_path_iter().for_each(|it| {

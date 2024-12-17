@@ -68,6 +68,8 @@ impl Add for Pos {
     }
 }
 
+pub type Point = (i32, i32);
+
 #[derive(Debug)]
 pub struct Size {
     pub width: i32,
