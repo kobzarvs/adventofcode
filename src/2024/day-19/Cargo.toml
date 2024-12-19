@@ -1,0 +1,28 @@
+[package]
+name = "day-19"
+version = "0.1.0"
+edition = "2021"
+
+[workspace]
+
+[dependencies]
+regex = "1.11.1"
+itertools = "0.13.0"
+rayon = "1.10.0"
+code-timing-macros = { version = "0.0.5", features = ["release"] }
+divan = "0.1.7"
+
+[[bench]]
+name = "benchmark"
+path = "benches/benchmarks.rs"
+harness = false
+
+[clippy]
+warn = ["all"]
+
+[profile.release]
+opt-level = "s"      # Максимальный уровень оптимизации (по умолчанию для --release)
+lto = "thin"         # Включить линкерные оптимизации (может улучшить производительность)
+codegen-units = 1    # Снизить количество параллельных единиц кода для лучшей оптимизации
+debug = false        # Убрать символы отладки
+panic = "abort"      # Использовать "abort" вместо unwind для уменьшения размера кода
