@@ -1,5 +1,5 @@
 [package]
-name = "{{project-name}}"
+name = "day-21"
 version = "0.1.0"
 edition = "2021"
 
@@ -13,6 +13,7 @@ code-timing-macros = { version = "0.0.5", features = ["release"] }
 divan = "0.1.7"
 geo = "0.29.3"
 petgraph = "0.6.5"
+termion = "4.0.3"
 
 [[bench]]
 name = "benchmark"

@@ -69,6 +69,17 @@ impl Add for Pos {
     }
 }
 
+pub type Point = (i32, i32);
+
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
+pub enum Dir {
+    North,
+    South,
+    East,
+    West,
+}
+
+
 #[derive(Debug)]
 pub struct Size {
     pub width: i32,

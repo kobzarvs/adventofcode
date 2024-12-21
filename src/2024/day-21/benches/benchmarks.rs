@@ -1,4 +1,4 @@
-use day_17::*;
+use day_21::*;
 
 fn main() {
     divan::main();
@@ -14,10 +14,4 @@ fn part1() {
 fn part2() {
     let input = include_str!("../data.txt");
     part2::run(input);
-}
-
-#[divan::bench]
-fn part2_2() {
-    let input = include_str!("../data.txt");
-    part2::run_2(input);
 }

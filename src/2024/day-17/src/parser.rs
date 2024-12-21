@@ -8,6 +8,8 @@ pub fn parse(input: &str) -> Computer {
         c: 0,
         ip: 0,
         program: vec![],
+        raw_program: vec![],
+        last_output: None,
     };
     
     // Парсим строки входных данных
@@ -42,7 +44,10 @@ pub fn parse(input: &str) -> Computer {
                 .map(|chunk| {
                     let nums: Vec<i64> = chunk.collect();
                     let cmd = Command::try_from(nums[0]).unwrap_or(Command::ADV);
-                    let op = nums.get(1).copied().unwrap_or(0);
+                    let op = nums[1];
+                    
+                    computer.raw_program.extend(nums);
+                    
                     match cmd {
                         Command::ADV => Instr::ADV(op),
                         Command::BXL => Instr::BXL(op),
