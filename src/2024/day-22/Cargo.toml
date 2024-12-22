@@ -1,5 +1,5 @@
 [package]
-name = "{{project-name}}"
+name = "day-22"
 version = "0.1.0"
 edition = "2021"
 
@@ -16,10 +16,6 @@ ahash = "0.8.11"
 crossbeam = "0.8.4"
 lazy_static = "1.4.0"
 
-[[bench]]
-name = "benchmark"
-path = "benches/benchmarks.rs"
-harness = false
 
 [clippy]
 warn = ["all"]
@@ -30,3 +26,8 @@ lto = "fat"         # Включить линкерные оптимизации
 codegen-units = 1    # Снизить количество параллельных единиц кода для лучшей оптимизации
 debug = false        # Убрать символы отладки
 panic = "abort"      # Использовать "abort" вместо unwind для уменьшения размера кода
+
+[[bench]]
+name = "benchmark"
+path = "benches/benchmarks.rs"
+harness = false

@@ -7,11 +7,11 @@ fn main() {
 #[divan::bench]
 fn part1() {
     let input = include_str!("../data.txt");
-    part1::run(input);
+    part_1::solve(input);
 }
 
 #[divan::bench]
 fn part2() {
     let input = include_str!("../data.txt");
-    part2::run(input);
+    part_2::solve(input);
 }

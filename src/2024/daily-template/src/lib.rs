@@ -1,10 +1,8 @@
-pub mod part1;
-pub mod part2;
 pub mod models;
+pub mod shared;
+pub mod parser;
+pub mod utils;
+pub mod part_1;
+pub mod part_2;
 
-mod parser;
-mod utils;
-
-pub use parser::*;
-pub use utils::*;
 pub use models::*;
