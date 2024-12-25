@@ -17,8 +17,6 @@ fn main() {
                     acc
                 })
         })
-        .collect::<Vec<u64>>()
-        .iter()
         .combinations(2)
         .map(|p| p[0] & p[1])
         .filter(|&it| it == 0)
